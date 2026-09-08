@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/colors.dart';
+import '../providers/ingredient_provider.dart';
+import '../models/ingredient_model.dart';
+import '../services/ingredient_prediction_service.dart';
 
 class KitchenStockScreen extends StatelessWidget {
   const KitchenStockScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<IngredientProvider>();
+    final ingredients = provider.ingredients;
+    final predictions = provider.predictions;
+
+    // Group ingredients by category
+    final Map<String, List<IngredientModel>> grouped = {};
+    for (final ing in ingredients) {
+      grouped.putIfAbsent(ing.category, () => []).add(ing);
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -66,7 +80,7 @@ class KitchenStockScreen extends StatelessWidget {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => provider.autoRestockCritical(),
                     icon: const Icon(Icons.refresh),
                     label: const Text('Auto-Restock'),
                     style: ElevatedButton.styleFrom(
@@ -112,42 +126,15 @@ class KitchenStockScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            _buildSimpleSection(context, 'Fresh Produce & Aromatics', [
-              'Onions (Red/Big)', 'Shallots', 'Ginger', 'Garlic', 'Green Chilies', 
-              'Curry Leaves (Fresh)', 'Spring Onions', 'Capsicum (Bell Peppers)', 
-              'Carrots', 'Cabbage', 'French Beans', 'Fresh Coriander Leaves', 'Lemon/Lime'
-            ]),
-            const SizedBox(height: 32),
-            _buildSimpleSection(context, 'Spices & Seasoning', [
-              'Mustard Seeds', 'Fennel Seeds', 'Cumin Seeds', 'Green Cardamom', 
-              'Black Cardamom', 'Cloves', 'Cinnamon Sticks', 'Star Anise', 'Bay Leaves', 
-              'Whole Black Peppercorns', 'Turmeric Powder', 'Kashmiri Red Chili Powder', 
-              'Coriander Powder', 'Garam Masala', 'White Pepper Powder', 'Black Pepper Powder',
-              'Kasuri Methi', 'Salt'
-            ]),
-            const SizedBox(height: 32),
-            _buildSimpleSection(context, 'Pantry, Sauces & Oils', [
-              'Coconut Oil', 'Neutral Vegetable Oil', 'Sesame Oil', 'Ghee', 'Butter (Unsalted)',
-              'Dark Soy Sauce', 'Tomato Ketchup', 'Green Chili Sauce', 'Red Chili Sauce',
-              'Szechuan Sauce', 'White Vinegar', 'Cornflour', 'All-Purpose Flour', 'Sugar/Honey'
-            ]),
-            const SizedBox(height: 32),
-            _buildSimpleSection(context, 'Dairy & Refrigerated', [
-              'Yogurt (Curd)', 'Fresh Cream', 'Paneer'
-            ]),
-            const SizedBox(height: 32),
-            _buildSimpleSection(context, 'Proteins & Vegetables', [
-              'Chicken (Boneless & Bone-in)', 'Beef', 'Mutton', 'Eggs',
-              'Cauliflower (Gobi)', 'Mushrooms', 'Baby Corn', 'Potatoes'
-            ]),
-            const SizedBox(height: 32),
-            _buildSimpleSection(context, 'Grains & Noodles', [
-              'Basmati Rice', 'Noodles'
-            ]),
-            const SizedBox(height: 32),
-            _buildSimpleSection(context, 'Essential "Secret" Ingredients', [
-              'Cashew Nuts', 'Fresh Coconut', 'Tamarind'
-            ]),
+            if (ingredients.isEmpty)
+              const Center(child: CircularProgressIndicator())
+            else
+              ...grouped.entries.map((entry) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 32),
+                  child: _buildCategorySection(context, entry.key, entry.value, predictions),
+                );
+              }).toList(),
           ],
         ),
       ),
@@ -172,54 +159,23 @@ class KitchenStockScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, String subtitle) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.outline),
-        ),
-      ],
-    );
-  }
-
-
-
-  Widget _buildPantryItem(BuildContext context, String name, String levelText, double levelValue, Color color) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text('Stock level: $levelText', style: TextStyle(color: color == AppColors.error ? AppColors.error : AppColors.outline, fontSize: 12)),
-          ],
-        ),
-        SizedBox(
-          width: 96,
-          child: LinearProgressIndicator(
-            value: levelValue,
-            backgroundColor: AppColors.surfaceContainerHighest,
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            borderRadius: BorderRadius.circular(4),
-            minHeight: 8,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSimpleSection(BuildContext context, String title, List<String> items) {
+  Widget _buildCategorySection(BuildContext context, String title, List<IngredientModel> items, List<IngredientPrediction> predictions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(context, title, '${items.length} Items'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '${items.length} Items',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.outline),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(12),
@@ -233,16 +189,65 @@ class KitchenStockScreen extends StatelessWidget {
               final item = entry.value;
               final isLast = index == items.length - 1;
               
-              // Create deterministic pseudo-random stock levels
-              double stockLevel = (item.length * 7 % 100) / 100.0;
-              if (stockLevel < 0.1) stockLevel = 0.1; // Ensure it's not 0
+              final prediction = predictions.where((p) => p.ingredientId == item.id).firstOrNull;
               
-              final stockText = '${(stockLevel * 100).toInt()}%';
-              final color = stockLevel < 0.25 ? AppColors.error : AppColors.secondaryContainer;
+              final displayValue = item.currentStock / item.displayDivisor;
+              final stockText = '${displayValue.toStringAsFixed(1)} ${item.displayUnit}';
+              
+              Color color = AppColors.secondaryContainer;
+              String timeText = '';
+              
+              if (prediction != null) {
+                timeText = prediction.exhaustionLabel;
+                if (prediction.riskLevel == IngredientRisk.critical) {
+                  color = AppColors.error;
+                } else if (prediction.riskLevel == IngredientRisk.warning) {
+                  color = AppColors.secondary;
+                }
+              }
 
               return Column(
                 children: [
-                  _buildPantryItem(context, item, stockText, stockLevel, color),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Text('Stock: $stockText', style: TextStyle(color: color == AppColors.error ? AppColors.error : AppColors.outline, fontSize: 12)),
+                                if (timeText.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: color.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(timeText, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        width: 96,
+                        child: LinearProgressIndicator(
+                          value: item.stockFraction,
+                          backgroundColor: AppColors.surfaceContainerHighest,
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
+                          borderRadius: BorderRadius.circular(4),
+                          minHeight: 8,
+                        ),
+                      ),
+                    ],
+                  ),
                   if (!isLast) const Divider(color: AppColors.surfaceContainerHighest, height: 24),
                 ],
               );

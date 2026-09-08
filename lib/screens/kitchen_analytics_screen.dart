@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
 import '../providers/cart_provider.dart';
+import '../providers/ingredient_provider.dart';
+import '../services/ingredient_prediction_service.dart';
 
 class KitchenAnalyticsScreen extends StatelessWidget {
   const KitchenAnalyticsScreen({Key? key}) : super(key: key);
@@ -15,6 +17,8 @@ class KitchenAnalyticsScreen extends StatelessWidget {
       order.date.month == today.month && 
       order.date.day == today.day
     ).length;
+    final ingredientProvider = context.watch<IngredientProvider>();
+    final predictions = ingredientProvider.predictions;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -184,34 +188,53 @@ class KitchenAnalyticsScreen extends StatelessWidget {
             const SizedBox(height: 40),
 
             // Predictive Insights
-            Text('Predictive Insights', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            Text('Live Exhaustion Forecast', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            _buildInsightCard(
-              icon: Icons.priority_high,
-              iconColor: AppColors.error,
-              iconBg: AppColors.errorContainer,
-              title: 'Coconut Oil Shortage',
-              subtitle: 'Estimated depletion: 4 hours',
-              action: TextButton(onPressed: (){}, child: const Text('ORDER', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold))),
-            ),
-            const SizedBox(height: 16),
-            _buildInsightCard(
-              icon: Icons.trending_up,
-              iconColor: AppColors.onSecondaryContainer,
-              iconBg: AppColors.secondaryContainer,
-              title: 'Spike in Parotta Demand',
-              subtitle: 'Suggest prepping +50 units',
-              action: const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
-            ),
-            const SizedBox(height: 16),
-            _buildInsightCard(
-              icon: Icons.check_circle,
-              iconColor: AppColors.tertiary,
-              iconBg: AppColors.tertiaryFixed,
-              title: 'Beef Inventory Stable',
-              subtitle: 'Current stock: 45kg (Next 2 days)',
-              action: const SizedBox.shrink(),
-            ),
+            if (predictions.isEmpty)
+              const Center(child: CircularProgressIndicator())
+            else
+              ...predictions.take(5).map((pred) {
+                IconData icon;
+                Color iconColor;
+                Color iconBg;
+                Widget action;
+
+                switch (pred.riskLevel) {
+                  case IngredientRisk.critical:
+                    icon = Icons.warning_amber_rounded;
+                    iconColor = AppColors.error;
+                    iconBg = AppColors.errorContainer;
+                    action = TextButton(
+                      onPressed: () => ingredientProvider.restock(pred.ingredientId, pred.suggestedRestockAmount),
+                      child: const Text('RESTOCK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                    );
+                    break;
+                  case IngredientRisk.warning:
+                    icon = Icons.info_outline;
+                    iconColor = AppColors.onSecondaryContainer;
+                    iconBg = AppColors.secondaryContainer;
+                    action = const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant);
+                    break;
+                  case IngredientRisk.ok:
+                    icon = Icons.check_circle_outline;
+                    iconColor = AppColors.tertiary;
+                    iconBg = AppColors.tertiaryFixed;
+                    action = const SizedBox.shrink();
+                    break;
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: _buildInsightCard(
+                    icon: icon,
+                    iconColor: iconColor,
+                    iconBg: iconBg,
+                    title: '${pred.ingredientName} (${pred.riskLabel})',
+                    subtitle: 'Depletes in: ${pred.exhaustionLabel} | Pace: ${pred.consumptionRatePerHour.toStringAsFixed(1)}${pred.unit}/hr',
+                    action: action,
+                  ),
+                );
+              }).toList(),
           ],
         ),
       ),

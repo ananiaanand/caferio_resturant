@@ -16,22 +16,14 @@ class _ManagerInventoryScreenState extends State<ManagerInventoryScreen> {
   final List<String> _categories = ['All Items', 'Vegetables', 'Spices', 'Meat', 'Dairy', 'Grains', 'Oils'];
 
   final List<Map<String, dynamic>> _allItems = [
-    {'name': 'Fresh Basil', 'qty': '1.2kg', 'expiry': '3 days', 'status': 'low', 'category': 'Vegetables',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuAt6L-ewKa7X2u9i6j0M4Gkeho7Atx29RnPbYZMefho7lKEoGh4v32MI_ACq7KPSbUxNlcEu34J_xXlZYOVRgbSBXSP0OF4wBGk8IfAfXbvhWSP6sTXTW_60lwZ9DuEe1-Km-vNJ-qVGpacWliHn9V90idomrlXPuX8eeK-BABHtIzPUlinkxCx4Uxfba_fuOx1dsYzdUiinmzzX7Qmf89PT30SnnEX9VV66jdZ0Ta3AGwVFk5em3LWYQ'},
-    {'name': 'Roma Tomatoes', 'qty': '24.5kg', 'expiry': '8 days', 'status': 'good', 'category': 'Vegetables',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuBMU9H9ZXPTOgcMBsmH7EbdpoyQdOE38FxP-Q1BAKwfdNoA5wkYFOil8gUYVff1vKzO9voDhFvJvNuSmumCgWoRCY7QkLUkByvAsnTuN8KR4llLGdCu7Dq_w2dAtaN_givqrmidI_TckgOMkUnzBcg7_GbaTxOyNcEKrYTwbU6RvUDLbc_X0bvSkSQ23zaqfCQx7_wWFkghP5E5EcSkHDOn-Yb4jvR-xJdvRsi8-km7zvdJa30SWg-tpg'},
-    {'name': 'Whole Milk', 'qty': '5L', 'expiry': '2 days', 'status': 'low', 'category': 'Dairy',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuAPxDPZxrmfPYuDSJ7At8vGwQ3-FEymvO6Z_C2VGBR8ch2i53B9TXRZPM29nsDlb1-yJKWzf_rbdcfrXEZvdV4ctbJpTFa8lWrmllux7QSBb7NO5rHvkyejDFT1CTWrpgxfvE1psA8ewD8rR-PlW6R5Cxq6P2CIYuIbhUjvnYYfX-ggq8GGZYknfMOMtCIg-6B6RN-mWUfKiRYl6Gnzfo2mlS9ihxvLcEHf38dxOl6KSpmSQcRTdNXOVQ'},
-    {'name': 'Smoked Paprika', 'qty': '2.8kg', 'expiry': '120 days', 'status': 'good', 'category': 'Spices',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuDihaqI1utKZF7WfC2172Zm_4Hk9AJ9nm_Op8YYy7BHDvXy-XnoInWiecdivzE_7vYpGn590Cj_HI8DDcTPHIgCZzYtm18c3A3YOpaDOdsbKmWd5Q3J--RTmk1fS5GQty8TnatevsLPCQQEZczo_nk7F2C_7lKIgwqNQmj5VzT_cy3bA1fnWk425HwNZ2AvWqSrt2zXXM2KA9Mn7P9YrSuc7heaYkOGKM87pYf0IzlN8rf7d9fjzeiQ4A'},
-    {'name': 'Beef Tenderloin', 'qty': '18.0kg', 'expiry': '4 days', 'status': 'good', 'category': 'Meat',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuDdH5mKT9pgA-RRbXTAzHjsJsXZ03MBuoxXfqYWfA8gZrtxXEQ21XpfO0NMw5-04WH40lkHkMvAoGBq06TqJjkQR8GxB1qVakC-MsTQ-EqruFPIexqr02Qe86StOLg_PM9QV70JJHN3ANYObcvUPxzO5pJtQRjzoOYbQgkMogiWbKtvDQocw-4fSDmcsckZhbQs19h1qdUdLfw6qCSgUOO7Is3spkCMpMUpx9Nxm2kpWNDwglw'},
-    {'name': 'Shallots', 'qty': '1.2kg', 'expiry': '5 days', 'status': 'low', 'category': 'Vegetables',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJiPYKNH7BE7ZgpWQUtDyS91KTpXMSYMXNtb7KgIVIsPS_JBjgGJVABRzvS4xErOG2VntTQkViBdhaFcuQwgbAYM6KH8xAxcX8immF8mn9mdsaiGvYRV2pHEtBTfZOsPhF_bJixbw9gi92zjrp6ueeUdYM5aOPibM7cXRG8qwUD8h0VCvUPLVAhBCwj4-FqyvpUPlENA-dkZhWjgAm9rhedAtYahhPHwmmU7plqEA-hkLer_TO8AVX5A'},
-    {'name': 'Coconut Oil', 'qty': '5L', 'expiry': '180 days', 'status': 'low', 'category': 'Oils',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCXH26fRifRDKEap2s9Qa7NMVXUlT1fq4hair0m_tuFbayek2htQNty8EARG-uGd0wA8PXq4aCAdNYWzld_cdkhhQkPHfsNQRJGcN5mrwmFiTlrkN9wRgilU2ahLWKLAosKjsblUVleINEn65dl1K4jft3-KwKlp5FvEa2bSAqabWZn7eoc7oT-s-ANKZHUntoEnXiWOfp3-lEdeseTm8ffv65eV7GnTVT1kybY6f19ETi7YTCf5u2RVA'},
-    {'name': 'Basmati Rice', 'qty': '22kg', 'expiry': '365 days', 'status': 'good', 'category': 'Grains',
-      'image': 'https://lh3.googleusercontent.com/aida-public/AB6AXuDRCgacgSyKS-jwG7gEfq-lX__B7GNkIJJvnpJT08YxTALE_x9AiYQ05m86k9u0njHcLAVozAS0kNFTIiHh8ueUf5hiqWMnbOwtR95ag2FpDrgIEK0Zd5ERaIrMCqNOIEAmwKzCssMeA_QId5siQ_UteuJRZhlHVAErZAvv7eBj6UohmapjmXktMBYyKD4UjiQ5V29CfIK_ZOBa7F1dvo7c3fEjP6aSfMF1q0q2lqlmP3w2LTGPNQFxYA'},
+    {'name': 'Fresh Basil', 'qty': '0kg', 'expiry': '0 days', 'status': 'low', 'category': 'Vegetables'},
+    {'name': 'Roma Tomatoes', 'qty': '0kg', 'expiry': '0 days', 'status': 'good', 'category': 'Vegetables'},
+    {'name': 'Whole Milk', 'qty': '0L', 'expiry': '0 days', 'status': 'low', 'category': 'Dairy'},
+    {'name': 'Smoked Paprika', 'qty': '0kg', 'expiry': '0 days', 'status': 'good', 'category': 'Spices'},
+    {'name': 'Beef Tenderloin', 'qty': '0kg', 'expiry': '0 days', 'status': 'good', 'category': 'Meat'},
+    {'name': 'Shallots', 'qty': '0kg', 'expiry': '0 days', 'status': 'low', 'category': 'Vegetables'},
+    {'name': 'Coconut Oil', 'qty': '0L', 'expiry': '0 days', 'status': 'low', 'category': 'Oils'},
+    {'name': 'Basmati Rice', 'qty': '0kg', 'expiry': '0 days', 'status': 'good', 'category': 'Grains'},
   ];
 
   List<Map<String, dynamic>> get _filtered {
@@ -181,7 +173,7 @@ class _ManagerInventoryScreenState extends State<ManagerInventoryScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.78,
+                      childAspectRatio: 2.0,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                     ),
@@ -215,109 +207,30 @@ class _ManagerInventoryScreenState extends State<ManagerInventoryScreen> {
   Widget _buildInventoryCard(BuildContext context, Map<String, dynamic> item) {
     final isLow = item['status'] == 'low';
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isLow ? AppColors.errorContainer : AppColors.outlineVariant),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.network(
-              item['image'] as String,
-              height: 110,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: 110,
-                color: AppColors.surfaceContainer,
-                child: const Icon(Icons.image, size: 40, color: AppColors.onSurfaceVariant),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(item['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
               ),
-            ),
+              Icon(Icons.inventory_2_outlined, size: 16, color: isLow ? AppColors.error : AppColors.onSurfaceVariant),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Status badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: isLow ? AppColors.errorContainer : Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    isLow ? 'Low Stock' : 'Healthy',
-                    style: TextStyle(
-                      color: isLow ? AppColors.error : Colors.green.shade700,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(item['name'] as String,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                Text(item['qty'] as String,
-                    style: TextStyle(
-                        color: isLow ? AppColors.primary : AppColors.onSurfaceVariant,
-                        fontWeight: isLow ? FontWeight.bold : FontWeight.normal,
-                        fontSize: 13)),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.schedule, size: 12, color: AppColors.onSurfaceVariant),
-                    const SizedBox(width: 2),
-                    Text('Exp: ${item['expiry']}',
-                        style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 11)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 7),
-                          decoration: BoxDecoration(
-                            color: isLow ? AppColors.primary : AppColors.surfaceContainer,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Text(
-                              isLow ? 'Refill' : 'Details',
-                              style: TextStyle(
-                                color: isLow ? Colors.white : AppColors.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.edit_outlined, size: 16, color: AppColors.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: 8),
+          Text(item['qty'] as String, style: TextStyle(color: isLow ? AppColors.error : AppColors.onSurfaceVariant, fontWeight: FontWeight.bold, fontSize: 13)),
+          const SizedBox(height: 4),
+          Text('Exp: ${item['expiry']}', style: const TextStyle(color: AppColors.onSurfaceVariant, fontSize: 11)),
         ],
       ),
     );

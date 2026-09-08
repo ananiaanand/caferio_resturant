@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
+import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
+import '../providers/profile_provider.dart';
+import '../providers/kitchen_provider.dart';
+import '../providers/ingredient_provider.dart';
+import '../models/user_model.dart';
 import 'main_screen.dart';
 import 'kitchen_main_screen.dart';
 import 'manager_main_screen.dart';
+import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -15,35 +21,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  Future<void> _handleLogin() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email == 'manager@gmail.com' && password == 'manager') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ManagerMainScreen()),
-      );
-    } else if (email == 'kitchen@gmail.com' && password == 'kitchen') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const KitchenMainScreen()),
-      );
-    } else if (email == 'user@gmail.com' && password == 'user') {
-      // Load persisted orders for this user before navigating
-      final cartProvider = context.read<CartProvider>();
-      await cartProvider.loadOrdersForUser(email);
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid email or password')),
-      );
-    }
-  }
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -52,8 +32,84 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _handleLogin() async {
+    final email    = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your email and password.');
+      return;
+    }
+
+    setState(() => _errorMessage = null);
+
+    try {
+      final authProvider = context.read<AuthProvider>();
+      final user = await authProvider.login(email: email, password: password);
+
+      if (!mounted) return;
+
+      // Sync profile
+      context.read<ProfileProvider>().setUser(user);
+
+      // Wire providers according to role
+      await _wireAndNavigate(user);
+    } on AuthException catch (e) {
+      setState(() => _errorMessage = e.message);
+    }
+  }
+
+  Future<void> _wireAndNavigate(UserModel user) async {
+    final cart        = context.read<CartProvider>();
+    final kitchen     = context.read<KitchenProvider>();
+    final ingredients = context.read<IngredientProvider>();
+
+    // Always (re-)wire the cart→kitchen callback with IngredientProvider
+    cart.onOrderPlaced = ({
+      required String id,
+      required List<CartItem> items,
+      required double total,
+      required String customerUserId,
+      String tableNumber = 'Table 1',
+    }) {
+      return kitchen.addOrder(
+        id: id,
+        items: items,
+        total: total,
+        customerUserId: customerUserId,
+        tableNumber: tableNumber,
+        ingredientProvider: ingredients,
+      );
+    };
+
+    if (user.isCustomer) {
+      await cart.loadOrdersForUser(user.email, userId: user.id);
+    }
+
+    if (!mounted) return;
+
+    Widget destination;
+    switch (user.role) {
+      case UserRole.manager:
+        destination = const ManagerMainScreen();
+        break;
+      case UserRole.kitchenStaff:
+        destination = const KitchenMainScreen();
+        break;
+      case UserRole.customer:
+        destination = const MainScreen();
+        break;
+    }
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => destination),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -65,23 +121,19 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo Section
+                  // Logo
                   Container(
                     width: 128,
                     height: 128,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.surfaceContainer,
-                        width: 4,
-                      ),
+                      border: Border.all(color: AppColors.surfaceContainer, width: 4),
                     ),
                     child: ClipOval(
                       child: Image.network(
                         'https://lh3.googleusercontent.com/aida-public/AB6AXuD0W5Vm6nWXGv4oHgSwPsxJ8HZ8Dxs3s1mNqhmDzqfUmQR8XiEilmZnTTY81DgsKfpREJziTPg8W76BsMs-dZ8ihhabT8yee9l9UKBG4tvBQdjuNkpqNfuNrNxeuB__ih9zMxl292evQGBNqvibz2icSq-gK9UDSEPYtuKF2FDyWiP_6cg_c5E6t6DnJfLaSPXbqN8QwZL_-RHVGwZPf3Kzz7tuo-m8KM_DO_KpeYNhEb-GZBt1eIh1iE7jrki_BtmkjBU',
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.restaurant_menu, size: 48),
+                        errorBuilder: (_, __, ___) => const Icon(Icons.restaurant_menu, size: 48),
                       ),
                     ),
                   ),
@@ -112,14 +164,38 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  // Email / Phone Input
+                  // Error banner
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.errorContainer,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: AppColors.error, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(color: AppColors.error, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Email
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 4, bottom: 8),
                         child: Text(
-                          'Email or Phone',
+                          'Email',
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(
                                 color: AppColors.onSurfaceVariant,
                               ),
@@ -127,8 +203,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       TextField(
                         controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          hintText: 'Enter your email or phone',
+                          hintText: 'Enter your email',
                           prefixIcon: const Icon(Icons.person, color: AppColors.onSurfaceVariant),
                           filled: true,
                           fillColor: AppColors.surfaceContainerLow,
@@ -146,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Password Input
+                  // Password
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -176,6 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
+                        onSubmitted: (_) => _handleLogin(),
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
                           prefixIcon: const Icon(Icons.lock, color: AppColors.onSurfaceVariant),
@@ -184,11 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               _obscurePassword ? Icons.visibility : Icons.visibility_off,
                               color: AppColors.onSurfaceVariant,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                           ),
                           filled: true,
                           fillColor: AppColors.surfaceContainerLow,
@@ -206,31 +280,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Login Button
+                  // Login button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: _handleLogin,
+                      onPressed: isLoading ? null : _handleLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryContainer,
                         foregroundColor: AppColors.onPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Text(
-                            'Login',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(Icons.arrow_forward),
-                        ],
-                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward),
+                              ],
+                            ),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -254,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Social Buttons
+                  // Social Buttons (UI only)
                   Row(
                     children: [
                       Expanded(
@@ -264,24 +335,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             backgroundColor: AppColors.surfaceContainerLowest,
                             side: const BorderSide(color: AppColors.surfaceContainer),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          icon: const Text(
-                            'G',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                          label: Text(
-                            'Google',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                  color: AppColors.onSurface,
-                                ),
-                          ),
+                          icon: const Text('G', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20)),
+                          label: Text('Google', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppColors.onSurface)),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -292,40 +349,31 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             backgroundColor: AppColors.surfaceContainerLowest,
                             side: const BorderSide(color: AppColors.surfaceContainer),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           icon: const Icon(Icons.facebook, color: Colors.blue),
-                          label: Text(
-                            'Facebook',
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                  color: AppColors.onSurface,
-                                ),
-                          ),
+                          label: Text('Facebook', style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppColors.onSurface)),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 40),
 
-                  // Footer
+                  // Sign up link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Don\'t have an account? ',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.onSurfaceVariant,
-                            ),
+                        "Don't have an account? ",
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const SignupScreen()),
+                        ),
                         child: Text(
                           'Create an Account',
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: AppColors.primary,
-                              ),
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(color: AppColors.primary),
                         ),
                       ),
                     ],

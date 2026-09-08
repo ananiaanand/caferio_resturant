@@ -1,28 +1,10 @@
 import 'package:flutter/foundation.dart';
 import '../models/product.dart';
+import '../models/cart_item.dart';
 import '../services/database_service.dart';
+import '../services/user_activity_service.dart';
 
-// ─── CartItem ─────────────────────────────────────────────────────────────────
-
-class CartItem {
-  final Product product;
-  int quantity;
-
-  CartItem({
-    required this.product,
-    this.quantity = 1,
-  });
-
-  Map<String, dynamic> toJson() => {
-        'product': product.toJson(),
-        'quantity': quantity,
-      };
-
-  factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
-        product: Product.fromJson(json['product'] as Map<String, dynamic>),
-        quantity: json['quantity'] as int,
-      );
-}
+export '../models/cart_item.dart';
 
 // ─── PlacedOrder ──────────────────────────────────────────────────────────────
 
@@ -63,14 +45,29 @@ class PlacedOrder {
 
 // ─── CartProvider ─────────────────────────────────────────────────────────────
 
+/// Callback type used to push a new order to the KitchenProvider without
+/// creating a circular dependency between providers.
+typedef OnOrderPlacedCallback = Future<void> Function({
+  required String id,
+  required List<CartItem> items,
+  required double total,
+  required String customerUserId,
+  String tableNumber,
+});
+
 class CartProvider with ChangeNotifier {
   final Map<String, CartItem> _items = {};
   final List<PlacedOrder> _orders = [];
 
   // The currently logged-in user's email; set this after login.
   String _currentUserEmail = 'user@gmail.com';
+  String _currentUserId = 'guest';
 
   final DatabaseService _db = DatabaseService();
+  final UserActivityService _activity = UserActivityService();
+
+  /// Optional callback injected by main.dart to forward orders to KitchenProvider.
+  OnOrderPlacedCallback? onOrderPlaced;
 
   Map<String, CartItem> get items => _items;
   List<PlacedOrder> get orders => _orders;
@@ -89,9 +86,10 @@ class CartProvider with ChangeNotifier {
   int get newOrderCount => _orders.where((o) => o.isNew).length;
 
   /// Call this after login to load the user's persisted orders.
-  Future<void> loadOrdersForUser(String email) async {
+  Future<void> loadOrdersForUser(String email, {String userId = 'guest'}) async {
     _currentUserEmail = email;
-    final raw = await _db.loadOrders(email);
+    _currentUserId = userId;
+    final raw = await _db.loadOrdersCompat(email);
     _orders.clear();
     _orders.addAll(raw.map((j) => PlacedOrder.fromJson(j)));
     notifyListeners();
@@ -102,6 +100,13 @@ class CartProvider with ChangeNotifier {
       _items[product.id]!.quantity += 1;
     } else {
       _items[product.id] = CartItem(product: product);
+      // Log add-to-cart event for the dataset
+      _activity.logAddToCart(
+        userId: _currentUserEmail,
+        productId: product.id,
+        productName: product.name,
+        price: product.price,
+      );
     }
     notifyListeners();
   }
@@ -117,6 +122,15 @@ class CartProvider with ChangeNotifier {
   }
 
   void removeItem(String productId) {
+    final item = _items[productId];
+    if (item != null) {
+      // Log remove-from-cart event for the dataset
+      _activity.logRemoveFromCart(
+        userId: _currentUserEmail,
+        productId: item.product.id,
+        productName: item.product.name,
+      );
+    }
     _items.remove(productId);
     notifyListeners();
   }
@@ -126,16 +140,21 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Places the order, persists it to the database, and notifies listeners.
+  /// Places the order, persists it to the database, pushes it to the kitchen,
+  /// and logs the activity event.
   Future<void> placeOrder() async {
     if (_items.isEmpty) return;
 
+    final orderId = DateTime.now().millisecondsSinceEpoch.toString();
+    final orderItems = _items.values
+        .map((item) => CartItem(product: item.product, quantity: item.quantity))
+        .toList();
+    final orderTotal = total;
+
     final newOrder = PlacedOrder(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      items: _items.values
-          .map((item) => CartItem(product: item.product, quantity: item.quantity))
-          .toList(),
-      total: total,
+      id: orderId,
+      items: orderItems,
+      total: orderTotal,
       date: DateTime.now(),
       isNew: true,
     );
@@ -143,10 +162,40 @@ class CartProvider with ChangeNotifier {
     _orders.insert(0, newOrder);
     _items.clear();
 
-    // Persist to database
-    await _db.saveOrder(
+    // 1. Persist customer order history
+    await _db.saveOrderCompat(
       userEmail: _currentUserEmail,
-      orderJson: newOrder.toJson(),
+      orderJson: {
+        ...newOrder.toJson(),
+        'userId': _currentUserId,
+      },
+    );
+
+    // 2. Push to KitchenProvider (real-time kitchen update)
+    if (onOrderPlaced != null) {
+      await onOrderPlaced!(
+        id: orderId,
+        items: orderItems,
+        total: orderTotal,
+        customerUserId: _currentUserEmail,
+        tableNumber: 'Table 1',
+      );
+    }
+
+    // 3. Log order_placed event for the activity dataset
+    await _activity.logOrderPlaced(
+      userId: _currentUserEmail,
+      orderId: orderId,
+      total: orderTotal,
+      itemCount: orderItems.fold(0, (s, i) => s + i.quantity),
+      items: orderItems
+          .map((i) => {
+                'productId': i.product.id,
+                'productName': i.product.name,
+                'quantity': i.quantity,
+                'price': i.product.price,
+              })
+          .toList(),
     );
 
     notifyListeners();

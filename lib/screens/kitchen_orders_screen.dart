@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
-import '../providers/cart_provider.dart';
+import '../providers/kitchen_provider.dart';
+import '../models/kitchen_order.dart';
 
 class KitchenOrdersScreen extends StatelessWidget {
   const KitchenOrdersScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final cartProvider = context.watch<CartProvider>();
-    final liveOrders = cartProvider.orders; // In a real app, filter by status
+    final kitchenProvider = context.watch<KitchenProvider>();
+    final activeOrders = kitchenProvider.activeOrders;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceContainerLow,
@@ -76,7 +77,7 @@ class KitchenOrdersScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${liveOrders.length} Active',
+                        '${activeOrders.length} Active',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
@@ -89,22 +90,28 @@ class KitchenOrdersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Expanded(
-              child: liveOrders.isEmpty
+              child: activeOrders.isEmpty
                   ? Center(
-                      child: Text(
-                        'No live orders at the moment.',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.onSurfaceVariant,
-                            ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.restaurant, size: 64, color: AppColors.outlineVariant),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No live orders at the moment.',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
                       ),
                     )
                   : ListView.separated(
-                      itemCount: liveOrders.length,
+                      itemCount: activeOrders.length,
                       separatorBuilder: (context, index) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
-                        final order = liveOrders[index];
-                        final isEven = index % 2 == 0;
-                        return _buildOrderCard(context, order, isEven);
+                        final order = activeOrders[index];
+                        return _buildOrderCard(context, order, kitchenProvider);
                       },
                     ),
             ),
@@ -114,7 +121,11 @@ class KitchenOrdersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, PlacedOrder order, bool isInProgress) {
+  Widget _buildOrderCard(
+      BuildContext context, KitchenOrder order, KitchenProvider kitchenProvider) {
+    final statusColor = _statusColor(order.status);
+    final statusBgColor = _statusBgColor(order.status);
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -124,12 +135,7 @@ class KitchenOrdersScreen extends StatelessWidget {
             color: AppColors.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(12),
             border: Border(
-              left: BorderSide(
-                color: isInProgress
-                    ? AppColors.surfaceContainerLowest
-                    : AppColors.primary.withOpacity(0.5),
-                width: 4,
-              ),
+              left: BorderSide(color: statusColor, width: 4),
               top: const BorderSide(color: AppColors.surfaceContainer),
               right: const BorderSide(color: AppColors.surfaceContainer),
               bottom: const BorderSide(color: AppColors.surfaceContainer),
@@ -144,6 +150,7 @@ class KitchenOrdersScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,27 +167,31 @@ class KitchenOrdersScreen extends StatelessWidget {
                             ),
                       ),
                       Text(
-                        'Table ${order.id.hashCode % 20 + 1}',
+                        order.tableNumber,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${order.placedAt.hour.toString().padLeft(2, '0')}:${order.placedAt.minute.toString().padLeft(2, '0')}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: AppColors.onSurfaceVariant,
                             ),
                       ),
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isInProgress
-                          ? AppColors.secondaryContainer
-                          : AppColors.errorContainer,
+                      color: statusBgColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      isInProgress ? 'IN PROGRESS' : 'PENDING',
+                      order.status.label,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isInProgress
-                                ? AppColors.onSecondaryContainer
-                                : AppColors.onErrorContainer,
+                            color: statusColor,
                             fontWeight: FontWeight.bold,
                           ),
                     ),
@@ -190,85 +201,48 @@ class KitchenOrdersScreen extends StatelessWidget {
               const SizedBox(height: 12),
               const Divider(color: AppColors.surfaceContainerLow),
               const SizedBox(height: 12),
-              Column(
-                children: order.items.map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${item.quantity}x ${item.product.name}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Icon(
-                          isInProgress
-                              ? Icons.check_circle
-                              : Icons.radio_button_unchecked,
-                          color: isInProgress
-                              ? AppColors.primary
-                              : AppColors.outlineVariant,
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 4),
-              const Divider(color: AppColors.surfaceContainerLow),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+              // Items list
+              ...order.items.map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(
-                        Icons.schedule,
-                        size: 18,
-                        color: isInProgress
-                            ? AppColors.primary
-                            : AppColors.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        '${order.date.hour.toString().padLeft(2, '0')}:${order.date.minute.toString().padLeft(2, '0')}',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: isInProgress
-                                  ? AppColors.primary
-                                  : AppColors.onSurfaceVariant,
+                        '${item.quantity}x  ${item.product.name}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      Text(
+                        '₹${(item.product.price * item.quantity).toStringAsFixed(0)}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.onSurfaceVariant,
                             ),
                       ),
                     ],
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isInProgress
-                          ? AppColors.primary
-                          : AppColors.secondaryContainer,
-                      foregroundColor: isInProgress
-                          ? AppColors.onPrimary
-                          : AppColors.onSecondaryContainer,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                    ),
-                    child: Text(
-                      isInProgress ? 'Ready' : 'Start',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                );
+              }).toList(),
+              const SizedBox(height: 4),
+              const Divider(color: AppColors.surfaceContainerLow),
+              const SizedBox(height: 12),
+              // Footer: total + action button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total: ₹${order.total.toStringAsFixed(0)}',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                   ),
+                  _buildActionButton(context, order, kitchenProvider),
                 ],
               ),
             ],
           ),
         ),
-        // NEW badge — shown until kitchen staff opens the Orders tab
+        // NEW badge
         if (order.isNew)
           Positioned(
             top: -10,
@@ -293,5 +267,79 @@ class KitchenOrdersScreen extends StatelessWidget {
       ],
     );
   }
-}
 
+  Widget _buildActionButton(
+      BuildContext context, KitchenOrder order, KitchenProvider kitchenProvider) {
+    String label;
+    Color bg;
+    Color fg;
+    KitchenOrderStatus? nextStatus;
+
+    switch (order.status) {
+      case KitchenOrderStatus.received:
+        label = 'Start';
+        bg = AppColors.secondaryContainer;
+        fg = AppColors.onSecondaryContainer;
+        nextStatus = KitchenOrderStatus.preparing;
+        break;
+      case KitchenOrderStatus.preparing:
+        label = 'Ready';
+        bg = AppColors.primary;
+        fg = AppColors.onPrimary;
+        nextStatus = KitchenOrderStatus.ready;
+        break;
+      case KitchenOrderStatus.ready:
+        label = 'Served';
+        bg = Colors.green.shade600;
+        fg = Colors.white;
+        nextStatus = KitchenOrderStatus.served;
+        break;
+      case KitchenOrderStatus.served:
+        label = '✓ Done';
+        bg = AppColors.surfaceContainer;
+        fg = AppColors.onSurfaceVariant;
+        nextStatus = null;
+        break;
+    }
+
+    return ElevatedButton(
+      onPressed: nextStatus == null
+          ? null
+          : () => kitchenProvider.updateStatus(order.id, nextStatus!),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: bg,
+        foregroundColor: fg,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      ),
+      child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+    );
+  }
+
+  Color _statusColor(KitchenOrderStatus status) {
+    switch (status) {
+      case KitchenOrderStatus.received:
+        return Colors.orange;
+      case KitchenOrderStatus.preparing:
+        return AppColors.primary;
+      case KitchenOrderStatus.ready:
+        return Colors.green.shade600;
+      case KitchenOrderStatus.served:
+        return AppColors.outlineVariant;
+    }
+  }
+
+  Color _statusBgColor(KitchenOrderStatus status) {
+    switch (status) {
+      case KitchenOrderStatus.received:
+        return Colors.orange.withOpacity(0.12);
+      case KitchenOrderStatus.preparing:
+        return AppColors.primary.withOpacity(0.1);
+      case KitchenOrderStatus.ready:
+        return Colors.green.withOpacity(0.12);
+      case KitchenOrderStatus.served:
+        return AppColors.surfaceContainer;
+    }
+  }
+}

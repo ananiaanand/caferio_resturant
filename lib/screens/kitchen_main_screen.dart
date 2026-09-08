@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/colors.dart';
-import '../providers/cart_provider.dart';
+import '../providers/kitchen_provider.dart';
 import 'kitchen_orders_screen.dart';
 import 'kitchen_stock_screen.dart';
 import 'kitchen_analytics_screen.dart';
@@ -27,14 +27,14 @@ class _KitchenMainScreenState extends State<KitchenMainScreen> {
   void _onDestinationSelected(int index) {
     // When kitchen staff taps Orders tab, mark all orders as seen
     if (index == 0) {
-      context.read<CartProvider>().markOrdersAsSeen();
+      context.read<KitchenProvider>().markAllSeen();
     }
     setState(() => _currentIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
-    final newOrderCount = context.watch<CartProvider>().newOrderCount;
+    final newOrderCount = context.watch<KitchenProvider>().newOrderCount;
 
     return Scaffold(
       body: _screens[_currentIndex],

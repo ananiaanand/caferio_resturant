@@ -142,10 +142,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                           children: [
                             Text(
                               _selectedPeriod == 0
-                                  ? '₹42,850'
+                                  ? '₹0'
                                   : _selectedPeriod == 1
-                                      ? '₹2,94,200'
-                                      : '₹12,85,000',
+                                      ? '₹0'
+                                      : '₹0',
                               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -1),
                             ),
                             const SizedBox(height: 6),
@@ -190,20 +190,20 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
                   const Text('Expected Profit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
                   const Text('Next Month Forecast', style: TextStyle(color: Colors.white70, fontSize: 12)),
                   const SizedBox(height: 8),
-                  const Text('₹1.24M',
+                  const Text('₹0.00',
                       style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: 0.78,
+                      value: 0.0,
                       backgroundColor: Colors.white.withOpacity(0.2),
                       valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFEBB0B)),
                       minHeight: 6,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Text('78% Confidence Score', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  const Text('0% Confidence Score', style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
@@ -221,15 +221,15 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               ),
               child: Column(
                 children: [
-                  _buildSalesBar(context, 'Nadan Beef Roast', 342, 0.92),
+                  _buildSalesBar(context, 'Nadan Beef Roast', 0, 0.0),
                   const SizedBox(height: 20),
-                  _buildSalesBar(context, 'Kerala Parotta', 285, 0.80),
+                  _buildSalesBar(context, 'Kerala Parotta', 0, 0.0),
                   const SizedBox(height: 20),
-                  _buildSalesBar(context, 'Chicken 65', 210, 0.65),
+                  _buildSalesBar(context, 'Chicken 65', 0, 0.0),
                   const SizedBox(height: 20),
-                  _buildSalesBar(context, 'Fish Curry', 178, 0.52),
+                  _buildSalesBar(context, 'Fish Curry', 0, 0.0),
                   const SizedBox(height: 20),
-                  _buildSalesBar(context, 'Egg Fried Rice', 145, 0.43),
+                  _buildSalesBar(context, 'Egg Fried Rice', 0, 0.0),
                 ],
               ),
             ),
@@ -238,10 +238,10 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
             // ── Critical Stock ────────────────────────────────────────────
             Text('Critical Stock Alerts', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            _buildCriticalStockCard('Shallots', 'Only 1.2kg left',
+            _buildCriticalStockCard('Shallots', 'Only 0kg left',
                 'https://lh3.googleusercontent.com/aida-public/AB6AXuBJiPYKNH7BE7ZgpWQUtDyS91KTpXMSYMXNtb7KgIVIsPS_JBjgGJVABRzvS4xErOG2VntTQkViBdhaFcuQwgbAYM6KH8xAxcX8immF8mn9mdsaiGvYRV2pHEtBTfZOsPhF_bJixbw9gi92zjrp6ueeUdYM5aOPibM7cXRG8qwUD8h0VCvUPLVAhBCwj4-FqyvpUPlENA-dkZhWjgAm9rhedAtYahhPHwmmU7plqEA-hkLer_TO8AVX5A'),
             const SizedBox(height: 12),
-            _buildCriticalStockCard('Coconut Oil', 'Only 5L left',
+            _buildCriticalStockCard('Coconut Oil', 'Only 0L left',
                 'https://lh3.googleusercontent.com/aida-public/AB6AXuCXH26fRifRDKEap2s9Qa7NMVXUlT1fq4hair0m_tuFbayek2htQNty8EARG-uGd0wA8PXq4aCAdNYWzld_cdkhhQkPHfsNQRJGcN5mrwmFiTlrkN9wRgilU2ahLWKLAosKjsblUVleINEn65dl1K4jft3-KwKlp5FvEa2bSAqabWZn7eoc7oT-s-ANKZHUntoEnXiWOfp3-lEdeseTm8ffv65eV7GnTVT1kybY6f19ETi7YTCf5u2RVA'),
             const SizedBox(height: 24),
 
@@ -252,54 +252,18 @@ class _ManagerDashboardScreenState extends State<ManagerDashboardScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildRunOutChip('Rice', '2 Days Left'),
+                  _buildRunOutChip('Rice', '0 Days Left'),
                   const SizedBox(width: 12),
-                  _buildRunOutChip('Dry Spices', '4 Days Left'),
+                  _buildRunOutChip('Dry Spices', '0 Days Left'),
                   const SizedBox(width: 12),
-                  _buildRunOutChip('Milk', '1 Day Left'),
+                  _buildRunOutChip('Milk', '0 Days Left'),
                   const SizedBox(width: 12),
-                  _buildRunOutChip('Fresh Cream', '3 Days Left'),
+                  _buildRunOutChip('Fresh Cream', '0 Days Left'),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // ── Staff Productivity Banner ─────────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEBB0B),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Staff Productivity is Up 15%',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, color: const Color(0xFF261900))),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Your kitchen team is processing orders faster than the regional average.',
-                          style: TextStyle(color: Color(0xFF5d4200), fontSize: 13),
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF261900),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text('Reward Team', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.emoji_events, size: 64, color: Color(0xFF5d4200)),
-                ],
-              ),
-            ),
           ],
         ),
       ),

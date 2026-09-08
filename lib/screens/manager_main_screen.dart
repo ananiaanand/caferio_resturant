@@ -3,7 +3,7 @@ import '../theme/colors.dart';
 import 'manager_dashboard_screen.dart';
 import 'manager_inventory_screen.dart';
 import 'manager_sales_screen.dart';
-import 'profile_screen.dart';
+import 'manager_profile_screen.dart';
 
 class ManagerMainScreen extends StatefulWidget {
   const ManagerMainScreen({Key? key}) : super(key: key);
@@ -19,7 +19,7 @@ class _ManagerMainScreenState extends State<ManagerMainScreen> {
     const ManagerDashboardScreen(),
     const ManagerInventoryScreen(),
     const ManagerSalesScreen(),
-    const ProfileScreen(),
+    const ManagerProfileScreen(),
   ];
 
   @override
