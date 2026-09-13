@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
+import 'package:caferio/screens/login_screen.dart';
 import 'package:caferio/utils/theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -54,9 +56,9 @@ class ProfileScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 26, color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'john.doe@example.com',
-                    style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
+                  Text(
+                    Supabase.instance.client.auth.currentUser?.email ?? 'john.doe@example.com',
+                    style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -142,10 +144,8 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.logout, 
                     title: 'Log Out', 
                     color: AppTheme.textDark,
-                    onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
+                    onTap: () async {
+                      await Supabase.instance.client.auth.signOut();
                     },
                   ),
                   const SizedBox(height: 12),

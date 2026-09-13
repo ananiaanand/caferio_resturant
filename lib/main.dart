@@ -2,9 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/app_provider.dart';
 import 'utils/theme.dart';
-import 'screens/login_screen.dart';
+import 'screens/auth_gate.dart';
 
-void main() {
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Supabase.initialize(
+    url: 'https://etgnpwntblbobdlkvflz.supabase.co', // TODO: REPLACE WITH YOUR SUPABASE URL
+    anonKey: 'sb_publishable_Dqq56CpA3ZZDRcvcsFo_SQ_s_0Mm3vP', // Provided anon key
+  );
+
   runApp(const CaferioApp());
 }
 
@@ -21,7 +30,7 @@ class CaferioApp extends StatelessWidget {
         title: 'Caferio',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
-        home: const LoginScreen(),
+        home: const AuthGate(),
       ),
     );
   }

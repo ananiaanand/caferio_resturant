@@ -10,7 +10,11 @@ class TrackOrderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final activeOrders = provider.orders;
+    final activeOrders = provider.orders.where((order) {
+      if (order.status != OrderStatus.served) return true;
+      if (order.servedAt == null) return true;
+      return DateTime.now().difference(order.servedAt!) <= const Duration(minutes: 10);
+    }).toList();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,

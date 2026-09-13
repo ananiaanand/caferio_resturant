@@ -3,20 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
 import 'package:caferio/utils/theme.dart';
 import 'package:caferio/models/menu_item.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
-
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Good Morning,';
-    }
-    if (hour < 17) {
-      return 'Good Afternoon,';
-    }
-    return 'Good Evening,';
-  }
 
 
   @override
@@ -27,25 +17,18 @@ class DashboardScreen extends StatelessWidget {
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         toolbarHeight: 70,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Row(
-              children: [
-                Text(
-                  _getGreeting(), 
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 14, color: AppTheme.textLight, fontWeight: FontWeight.w600)
-                ),
-                const SizedBox(width: 6),
-                Icon(
-                  DateTime.now().hour < 17 ? Icons.wb_sunny_rounded : Icons.nightlight_round,
-                  size: 16,
-                  color: DateTime.now().hour < 17 ? Colors.orange : Colors.indigoAccent,
-                ),
-              ],
+            const Icon(Icons.restaurant, color: AppTheme.primaryColor, size: 32),
+            const SizedBox(width: 8),
+            Text(
+              'Caferio',
+              style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                fontSize: 28,
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: 2),
-            Text('John Doe', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 24)),
           ],
         ),
         actions: [
@@ -68,7 +51,9 @@ class DashboardScreen extends StatelessWidget {
           children: [
             Text(
               'What would you like\nto eat today?',
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28, height: 1.2),
+              style: GoogleFonts.sourGummy(
+                textStyle: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28, height: 1.2),
+              ),
             ),
             const SizedBox(height: 24),
             
@@ -221,25 +206,28 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: item.imageUrl.startsWith('assets/')
-                      ? Image.asset(
-                          item.imageUrl,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[100],
-                            child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
+                  child: Opacity(
+                    opacity: item.isOutOfStock ? 0.5 : 1.0,
+                    child: item.imageUrl.startsWith('assets/')
+                        ? Image.asset(
+                            item.imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: Colors.grey[100],
+                              child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
+                            ),
+                          )
+                        : Image.network(
+                            item.imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: Colors.grey[100],
+                              child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
+                            ),
                           ),
-                        )
-                      : Image.network(
-                          item.imageUrl,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[100],
-                            child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
-                          ),
-                        ),
+                  ),
                 ),
                 Positioned(
                   top: 8,
@@ -297,54 +285,57 @@ class DashboardScreen extends StatelessWidget {
                         fontSize: 15,
                       ),
                     ),
-                    Builder(
-                      builder: (context) {
-                        final quantity = provider.getCartItemQuantity(item.id);
-                        if (quantity > 0) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppTheme.primaryColor),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                InkWell(
-                                  onTap: () => provider.removeFromCart(item),
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    child: Icon(Icons.remove, color: AppTheme.primaryColor, size: 16),
+                    if (item.isOutOfStock)
+                      const Text('Out of Stock', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 12))
+                    else
+                      Builder(
+                        builder: (context) {
+                          final quantity = provider.getCartItemQuantity(item.id);
+                          if (quantity > 0) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppTheme.primaryColor),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  InkWell(
+                                    onTap: () => provider.removeFromCart(item),
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      child: Icon(Icons.remove, color: AppTheme.primaryColor, size: 16),
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  quantity.toString(),
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
-                                ),
-                                InkWell(
-                                  onTap: () => provider.addToCart(item),
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    child: Icon(Icons.add, color: AppTheme.primaryColor, size: 16),
+                                  Text(
+                                    quantity.toString(),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
                                   ),
-                                ),
-                              ],
+                                  InkWell(
+                                    onTap: () => provider.addToCart(item),
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      child: Icon(Icons.add, color: AppTheme.primaryColor, size: 16),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return InkWell(
+                            onTap: () => provider.addToCart(item),
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.add, color: Colors.white, size: 16),
                             ),
                           );
                         }
-                        return InkWell(
-                          onTap: () => provider.addToCart(item),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.add, color: Colors.white, size: 16),
-                          ),
-                        );
-                      }
-                    )
+                      )
                   ],
                 )
               ],
