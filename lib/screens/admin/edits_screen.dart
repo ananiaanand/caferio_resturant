@@ -100,26 +100,28 @@ class EditsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
                         // Stock Toggle
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              item.isOutOfStock ? 'Out of Stock' : 'In Stock',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: item.isOutOfStock ? Colors.red : Colors.green,
-                                fontWeight: FontWeight.bold,
+                        FittedBox(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                item.isOutOfStock ? 'Out of Stock' : 'In Stock',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: item.isOutOfStock ? Colors.red : Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            Switch(
-                              value: !item.isOutOfStock,
-                              activeColor: Colors.green,
-                              onChanged: (value) {
-                                provider.toggleItemStock(item.id);
-                              },
-                            ),
-                          ],
+                              Switch(
+                                value: !item.isOutOfStock,
+                                activeColor: Colors.green,
+                                onChanged: (value) {
+                                  provider.toggleItemStock(item.id);
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
