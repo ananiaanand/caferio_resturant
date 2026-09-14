@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:caferio/screens/login_screen.dart';
 import 'package:caferio/screens/main_layout.dart';
 import 'package:caferio/screens/kitchen/kitchen_layout.dart';
+import 'package:caferio/screens/admin/admin_layout.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -42,7 +43,9 @@ class AuthGate extends StatelessWidget {
               }
 
               final role = roleSnapshot.data?['role'] as String?;
-              if (role == 'kitchen') {
+              if (role == 'admin') {
+                return const AdminLayout();
+              } else if (role == 'kitchen') {
                 return const KitchenLayout();
               } else {
                 return const MainLayout();

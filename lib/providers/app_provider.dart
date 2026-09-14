@@ -489,6 +489,14 @@ class AppProvider with ChangeNotifier {
     }
   }
 
+  void updateItemPrice(String id, double newPrice) {
+    final index = _menuItems.indexWhere((item) => item.id == id);
+    if (index >= 0) {
+      _menuItems[index].price = newPrice;
+      notifyListeners();
+    }
+  }
+
   int getCartItemQuantity(String itemId) {
     final index = _cart.indexWhere((c) => c.menuItem.id == itemId);
     if (index >= 0) return _cart[index].quantity;

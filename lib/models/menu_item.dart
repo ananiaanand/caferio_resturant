@@ -2,7 +2,7 @@ class MenuItem {
   final String id;
   final String name;
   final String description;
-  final double price;
+  double price;
   final String category;
   final String imageUrl;
   final bool isSpecial;
