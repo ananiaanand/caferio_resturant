@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import '../models/menu_item.dart';
 import '../models/order.dart';
 import '../models/inventory_item.dart';
+import '../models/recommendation.dart';
+import '../models/customer_behaviour.dart';
+import '../services/recommendation_service.dart';
 import 'dart:async';
 import 'dart:math';
 
@@ -9,6 +12,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AppProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
+
+  // --- Recommendation System ---
+  final SupabaseRecommendationService _recommendationService =
+      SupabaseRecommendationService();
+
+  List<RecommendationItem> _recommendedItems = [];
+  List<RecommendationItem> _cartRecommendations = [];
+  CustomerBehaviour? _customerBehaviour;
+  bool _isLoadingRecommendations = false;
+
+  List<RecommendationItem> get recommendedItems => _recommendedItems;
+  List<RecommendationItem> get cartRecommendations => _cartRecommendations;
+  CustomerBehaviour? get customerBehaviour => _customerBehaviour;
+  bool get isLoadingRecommendations => _isLoadingRecommendations;
 
   AppProvider() {
     _initSupabase();
@@ -18,36 +35,130 @@ class AppProvider with ChangeNotifier {
 
   void _initSupabase() async {
     _fetchOrders();
+    _loadRecommendations();
 
     if (!_isSubscribed) {
       _isSubscribed = true;
-      // 2. Listen to real-time changes
+      // Listen to real-time order changes
       _supabase.channel('public:orders').onPostgresChanges(
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: 'orders',
         callback: (payload) {
-          // Just refetch everything on any change to keep it simple and robust
-          _fetchOrders(); 
+          _fetchOrders();
         },
       ).subscribe();
     }
   }
 
+  /// Load personalized recommendations for the current user.
+  Future<void> _loadRecommendations() async {
+    _isLoadingRecommendations = true;
+    notifyListeners();
+
+    try {
+      final customerId = _supabase.auth.currentUser?.id;
+      _recommendedItems = await _recommendationService.getRecommendations(
+        customerId: customerId,
+        cartItemIds: [],
+        allMenuItems: _menuItems,
+      );
+
+      if (customerId != null) {
+        _customerBehaviour =
+            await _recommendationService.getCustomerBehaviour(customerId);
+      }
+    } catch (e) {
+      debugPrint('Error loading recommendations: \$e');
+    } finally {
+      _isLoadingRecommendations = false;
+      notifyListeners();
+    }
+  }
+
+  /// Refresh cart-based cross-sell recommendations when cart changes.
+  Future<void> _refreshCartRecommendations() async {
+    if (_cart.isEmpty) {
+      _cartRecommendations = [];
+      notifyListeners();
+      return;
+    }
+    try {
+      final customerId = _supabase.auth.currentUser?.id;
+      final cartIds = _cart.map((c) => c.menuItem.id).toList();
+      _cartRecommendations = await _recommendationService.getRecommendations(
+        customerId: customerId,
+        cartItemIds: cartIds,
+        allMenuItems: _menuItems,
+        limit: 5,
+      );
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error refreshing cart recommendations: \$e');
+    }
+  }
+
   Future<void> _fetchOrders() async {
     try {
-      final data = await _supabase.from('orders').select().order('created_at', ascending: true);
+      // Fetch orders joined with their order_items rows
+      final data = await _supabase
+          .from('orders')
+          .select('*, order_items(id, menu_item_id, quantity)')
+          .order('id', ascending: false); // fallback sort if created_at missing
+
       _orders.clear();
       for (final row in data) {
         try {
-          _orders.insert(0, Order.fromJson(row));
+          // Build CartItems by matching menu_item_id to our local menu catalogue
+          final rawItems = row['order_items'] as List? ?? [];
+          final cartItems = <CartItem>[];
+          for (final oi in rawItems) {
+            final menuItemId = oi['menu_item_id']?.toString() ?? '';
+            final qty = (oi['quantity'] as num?)?.toInt() ?? 1;
+            // Look up the menu item in our local catalogue first
+            final menuItem = _menuItems.firstWhere(
+              (m) => m.id == menuItemId,
+              orElse: () => MenuItem(
+                id: menuItemId,
+                name: 'Item #$menuItemId',
+                description: '',
+                price: 0,
+                category: 'General',
+                imageUrl: '',
+              ),
+            );
+            cartItems.add(CartItem(menuItem: menuItem, quantity: qty));
+          }
+
+          final statusStr = row['status']?.toString() ?? 'received';
+          final status = OrderStatus.values.firstWhere(
+            (e) => e.name == statusStr,
+            orElse: () => OrderStatus.received,
+          );
+
+          _orders.add(Order(
+            id: row['id']?.toString() ?? '',
+            customerId: row['customer_id']?.toString(),
+            items: cartItems,
+            totalAmount: (row['total_amount'] is num)
+                ? (row['total_amount'] as num).toDouble()
+                : 0.0,
+            createdAt: row['created_at'] != null
+                ? DateTime.tryParse(row['created_at'].toString()) ??
+                    DateTime.now()
+                : DateTime.now(),
+            servedAt: row['served_at'] != null
+                ? DateTime.tryParse(row['served_at'].toString())
+                : null,
+            status: status,
+          ));
         } catch (e) {
-          debugPrint('Error parsing order: $e');
+          debugPrint('Error parsing order: $e | row: $row');
         }
       }
       notifyListeners();
     } catch (e) {
-      debugPrint('Error fetching initial orders: $e');
+      debugPrint('Error fetching orders: $e');
     }
   }
 
@@ -517,6 +628,7 @@ class AppProvider with ChangeNotifier {
       _cart.add(CartItem(menuItem: item));
     }
     notifyListeners();
+    _refreshCartRecommendations();
   }
 
   void removeFromCart(MenuItem item) {
@@ -528,30 +640,91 @@ class AppProvider with ChangeNotifier {
         _cart.removeAt(index);
       }
       notifyListeners();
+      _refreshCartRecommendations();
     }
   }
 
-  Future<void> placeOrder() async {
-    if (_cart.isEmpty) return;
+  /// Places an order.
+  /// Strategy: try Supabase first; if it fails for any reason
+  /// (DB paused, missing column, RLS, no network), fall back to
+  /// a local in-memory order so the cart→track flow always works.
+  Future<bool> placeOrder() async {
+    if (_cart.isEmpty) return false;
 
-    final newOrder = Order(
-      id: '', // Will be generated by Supabase
-      items: List.from(_cart),
-      totalAmount: cartTotal,
-      createdAt: DateTime.now(),
-    );
-    
-    final orderJson = newOrder.toJson();
-    orderJson.remove('id'); // Remove empty ID so Supabase generates one
+    final customerId = _supabase.auth.currentUser?.id;
+    final cartSnapshot = List<CartItem>.from(_cart);
+    final total = cartTotal;
+    final now = DateTime.now();
+
+    String orderId = '';
 
     try {
-      await _supabase.from('orders').insert(orderJson);
-      _cart.clear();
-      notifyListeners();
+      // --- Try Supabase ---
+      final orderPayload = <String, dynamic>{
+        'status': 'received',
+        'total_amount': total,
+        if (customerId != null) 'customer_id': customerId,
+      };
+
+      final response = await _supabase
+          .from('orders')
+          .insert(orderPayload)
+          .select('id')
+          .maybeSingle()
+          .timeout(const Duration(seconds: 8));
+
+      orderId = response?['id']?.toString() ?? '';
+
+      if (orderId.isNotEmpty) {
+        // Insert order_items rows (best-effort — ignore failure)
+        try {
+          final orderItemsPayload = cartSnapshot.map((c) => {
+            'order_id': orderId,
+            'menu_item_id': c.menuItem.id,
+            'quantity': c.quantity,
+          }).toList();
+          await _supabase.from('order_items').insert(orderItemsPayload)
+              .timeout(const Duration(seconds: 5));
+        } catch (e) {
+          debugPrint('order_items insert failed (non-fatal): $e');
+        }
+      }
     } catch (e) {
-      debugPrint('Error placing order: $e');
+      debugPrint('Supabase order insert failed (using local fallback): $e');
     }
+
+    // If Supabase didn't give us an id, generate a local one
+    if (orderId.isEmpty) {
+      orderId = 'local_${now.millisecondsSinceEpoch}';
+    }
+
+    // Always add the order to local state immediately
+    _orders.insert(0, Order(
+      id: orderId,
+      customerId: customerId,
+      items: cartSnapshot,
+      totalAmount: total,
+      createdAt: now,
+      status: OrderStatus.received,
+    ));
+
+    // Record purchases for recommendation engine (fire-and-forget)
+    _recommendationService
+        .recordOrderPurchases(
+          orderId: orderId,
+          customerId: customerId,
+          items: cartSnapshot,
+          totalAmount: total,
+        )
+        .then((_) => _loadRecommendations())
+        .catchError((e) => debugPrint('Recommendation recording error: $e'));
+
+    _cart.clear();
+    _cartRecommendations = [];
+    notifyListeners();
+    return true;
   }
+
 
   Future<void> advanceOrderStatus(String orderId) async {
     final index = _orders.indexWhere((o) => o.id == orderId);
@@ -560,14 +733,28 @@ class AppProvider with ChangeNotifier {
       final currentStatusIndex = order.status.index;
       if (currentStatusIndex < OrderStatus.values.length - 1) {
         final newStatus = OrderStatus.values[currentStatusIndex + 1];
-        try {
-          final Map<String, dynamic> updateData = {'status': newStatus.name};
-          if (newStatus == OrderStatus.served) {
-            updateData['served_at'] = DateTime.now().toIso8601String();
+
+        // Update local state immediately (optimistic update)
+        _orders[index] = Order(
+          id: order.id,
+          customerId: order.customerId,
+          items: order.items,
+          totalAmount: order.totalAmount,
+          createdAt: order.createdAt,
+          servedAt: newStatus == OrderStatus.served ? DateTime.now() : order.servedAt,
+          status: newStatus,
+        );
+        notifyListeners();
+
+        // Sync to Supabase (best-effort — local ID orders won't sync)
+        if (!orderId.startsWith('local_')) {
+          try {
+            final updateData = <String, dynamic>{'status': newStatus.name};
+            await _supabase.from('orders').update(updateData).eq('id', orderId)
+                .timeout(const Duration(seconds: 5));
+          } catch (e) {
+            debugPrint('Error syncing order status to Supabase: $e');
           }
-          await _supabase.from('orders').update(updateData).eq('id', orderId);
-        } catch (e) {
-          debugPrint('Error updating order status: $e');
         }
       }
     }

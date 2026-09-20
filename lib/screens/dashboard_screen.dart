@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
 import 'package:caferio/utils/theme.dart';
 import 'package:caferio/models/menu_item.dart';
+import 'package:caferio/screens/recommendations_section.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -114,6 +115,12 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
+
+            // Personalized Recommendations
+            if (provider.selectedCategory == 'All') ...[
+              const RecommendationsSection(),
+              const SizedBox(height: 32),
+            ],
 
             // Dynamic Category Items Header & Sections
             if (provider.selectedCategory == 'All') ...[

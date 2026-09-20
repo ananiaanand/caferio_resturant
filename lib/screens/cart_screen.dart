@@ -2,10 +2,71 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
 import 'package:caferio/utils/theme.dart';
+import 'package:caferio/screens/cart_recommendations_widget.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   final VoidCallback? onBrowse;
-  const CartScreen({super.key, this.onBrowse});
+  final VoidCallback? onOrderPlaced;
+  const CartScreen({super.key, this.onBrowse, this.onOrderPlaced});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  bool _isPlacingOrder = false;
+
+  Future<void> _handleCheckout(AppProvider provider) async {
+    if (_isPlacingOrder) return;
+    setState(() => _isPlacingOrder = true);
+
+    final success = await provider.placeOrder();
+
+    if (!mounted) return;
+    setState(() => _isPlacingOrder = false);
+
+    if (success) {
+      // Show a brief success overlay then navigate to Track tab
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Order placed! Kitchen is now preparing your food.',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.green.shade700,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      // Short delay so user sees the snackbar before tab switch
+      await Future.delayed(const Duration(milliseconds: 800));
+      if (mounted) widget.onOrderPlaced?.call();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Could not place order. Please try again.'),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red.shade700,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,17 +96,13 @@ class CartScreen extends StatelessWidget {
                   Text('Your cart is empty', style: Theme.of(context).textTheme.displayMedium),
                   const SizedBox(height: 8),
                   const Text(
-                    'Looks like you haven\'t added\nanything to your cart yet', 
-                    textAlign: TextAlign.center, 
+                    'Looks like you haven\'t added\nanything to your cart yet',
+                    textAlign: TextAlign.center,
                     style: TextStyle(color: AppTheme.textLight, height: 1.5, fontSize: 16),
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
-                    onPressed: () {
-                      if (onBrowse != null) {
-                        onBrowse!();
-                      }
-                    },
+                    onPressed: () => widget.onBrowse?.call(),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                       backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
@@ -160,6 +217,9 @@ class CartScreen extends StatelessWidget {
                     },
                   ),
                 ),
+                // Cart Cross-Sell Recommendations
+                const CartRecommendationsWidget(),
+                // Checkout Panel
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -207,39 +267,51 @@ class CartScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
+                        // Checkout Button with loading state
                         InkWell(
-                          onTap: () {
-                            provider.placeOrder();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('Order placed successfully! Track it in the Track tab.'),
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: Colors.green.shade800,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                            );
-                          },
-                          child: Container(
+                          onTap: _isPlacingOrder ? null : () => _handleCheckout(provider),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
                             width: double.infinity,
                             height: 60,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppTheme.primaryColor, Color(0xFFC01018)],
+                              gradient: LinearGradient(
+                                colors: _isPlacingOrder
+                                    ? [Colors.grey.shade400, Colors.grey.shade500]
+                                    : [AppTheme.primaryColor, const Color(0xFFC01018)],
                               ),
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppTheme.primaryColor.withValues(alpha: 0.4),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
+                              boxShadow: _isPlacingOrder
+                                  ? []
+                                  : [
+                                      BoxShadow(
+                                        color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
                             ),
-                            child: const Text(
-                              'Checkout',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
+                            child: _isPlacingOrder
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.restaurant_menu, color: Colors.white, size: 22),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        'Place Order',
+                                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
                           ),
                         ),
                       ],

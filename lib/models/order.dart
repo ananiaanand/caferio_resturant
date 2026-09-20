@@ -13,6 +13,7 @@ enum OrderStatus {
 
 class Order {
   final String id;
+  final String? customerId;
   final List<CartItem> items;
   final double totalAmount;
   final DateTime createdAt;
@@ -21,6 +22,7 @@ class Order {
 
   Order({
     required this.id,
+    this.customerId,
     required this.items,
     required this.totalAmount,
     required this.createdAt,
@@ -30,10 +32,11 @@ class Order {
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
-      id: json['id'],
-      items: (json['items'] as List).map((item) => CartItem.fromJson(item)).toList(),
-      totalAmount: json['total_amount'].toDouble(),
-      createdAt: DateTime.parse(json['created_at']),
+      id: json['id'] ?? '',
+      customerId: json['customer_id']?.toString(),
+      items: (json['items'] as List?)?.map((item) => CartItem.fromJson(item)).toList() ?? [],
+      totalAmount: (json['total_amount'] is num) ? (json['total_amount'] as num).toDouble() : 0.0,
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
       servedAt: json['served_at'] != null ? DateTime.parse(json['served_at']) : null,
       status: OrderStatus.values.firstWhere(
         (e) => e.name == json['status'],
@@ -45,6 +48,7 @@ class Order {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      if (customerId != null) 'customer_id': customerId,
       'items': items.map((e) => e.toJson()).toList(),
       'total_amount': totalAmount,
       'created_at': createdAt.toIso8601String(),

@@ -14,14 +14,19 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
-  
+
+  void _navigateTo(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   late final List<Widget> _screens = [
     const DashboardScreen(),
-    CartScreen(onBrowse: () {
-      setState(() {
-        _currentIndex = 0;
-      });
-    }),
+    CartScreen(
+      onBrowse: () => _navigateTo(0),
+      onOrderPlaced: () => _navigateTo(2),
+    ),
     const TrackOrderScreen(),
     const ProfileScreen(),
   ];
@@ -32,11 +37,7 @@ class _MainLayoutState extends State<MainLayout> {
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _navigateTo,
         selectedItemColor: AppTheme.primaryColor,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,

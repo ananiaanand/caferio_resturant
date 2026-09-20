@@ -25,16 +25,16 @@ class MenuItem {
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
     return MenuItem(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      price: json['price'].toDouble(),
-      category: json['category'],
-      imageUrl: json['imageUrl'],
-      isSpecial: json['isSpecial'] ?? false,
-      isTopPick: json['isTopPick'] ?? false,
-      isFavourite: json['isFavourite'] ?? false,
-      isOutOfStock: json['isOutOfStock'] ?? false,
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Unknown',
+      description: json['description']?.toString() ?? '',
+      price: (json['price'] is num) ? (json['price'] as num).toDouble() : 0.0,
+      category: json['category']?.toString() ?? 'General',
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      isSpecial: json['isSpecial'] as bool? ?? false,
+      isTopPick: json['isTopPick'] as bool? ?? false,
+      isFavourite: json['isFavourite'] as bool? ?? false,
+      isOutOfStock: json['isOutOfStock'] as bool? ?? false,
     );
   }
 
@@ -63,10 +63,22 @@ class CartItem {
     this.quantity = 1,
   });
 
+  /// Parses a CartItem from JSON.
+  /// Handles two formats:
+  /// 1. Flat (Supabase JSONB): `{ "id": "1", "name": "Burger", "quantity": 2, ... }`
+  /// 2. Nested (legacy): `{ "menuItem": { "id": "1", ... }, "quantity": 2 }`
   factory CartItem.fromJson(Map<String, dynamic> json) {
+    if (json.containsKey('menuItem') && json['menuItem'] is Map) {
+      // Legacy nested format
+      return CartItem(
+        menuItem: MenuItem.fromJson(json['menuItem'] as Map<String, dynamic>),
+        quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+      );
+    }
+    // Flat JSONB format stored directly in Supabase orders.items
     return CartItem(
-      menuItem: MenuItem.fromJson(json['menuItem']),
-      quantity: json['quantity'],
+      menuItem: MenuItem.fromJson(json),
+      quantity: (json['quantity'] as num?)?.toInt() ?? 1,
     );
   }
 
