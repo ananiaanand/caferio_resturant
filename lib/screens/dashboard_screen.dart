@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
 import 'package:caferio/utils/theme.dart';
 import 'package:caferio/models/menu_item.dart';
+import 'package:caferio/models/inventory_item.dart';
 import 'package:caferio/screens/recommendations_section.dart';
 import 'package:google_fonts/google_fonts.dart';
 

@@ -1,0 +1,2191 @@
+date,item,orders
+2025-09-01,Chicken Biriyani,59
+2025-09-01,Fried Rice,39
+2025-09-01,Burger,22
+2025-09-01,Pizza,16
+2025-09-01,Pasta,20
+2025-09-01,Chicken Fry,38
+2025-09-02,Chicken Biriyani,65
+2025-09-02,Fried Rice,39
+2025-09-02,Burger,33
+2025-09-02,Pizza,26
+2025-09-02,Pasta,25
+2025-09-02,Chicken Fry,24
+2025-09-03,Chicken Biriyani,61
+2025-09-03,Fried Rice,46
+2025-09-03,Burger,36
+2025-09-03,Pizza,27
+2025-09-03,Pasta,28
+2025-09-03,Chicken Fry,28
+2025-09-04,Chicken Biriyani,68
+2025-09-04,Fried Rice,41
+2025-09-04,Burger,56
+2025-09-04,Pizza,40
+2025-09-04,Pasta,33
+2025-09-04,Chicken Fry,38
+2025-09-05,Chicken Biriyani,95
+2025-09-05,Fried Rice,72
+2025-09-05,Burger,75
+2025-09-05,Pizza,65
+2025-09-05,Pasta,44
+2025-09-05,Chicken Fry,63
+2025-09-06,Chicken Biriyani,103
+2025-09-06,Fried Rice,50
+2025-09-06,Burger,50
+2025-09-06,Pizza,49
+2025-09-06,Pasta,35
+2025-09-06,Chicken Fry,48
+2025-09-07,Chicken Biriyani,104
+2025-09-07,Fried Rice,53
+2025-09-07,Burger,58
+2025-09-07,Pizza,41
+2025-09-07,Pasta,37
+2025-09-07,Chicken Fry,42
+2025-09-08,Chicken Biriyani,67
+2025-09-08,Fried Rice,40
+2025-09-08,Burger,27
+2025-09-08,Pizza,20
+2025-09-08,Pasta,16
+2025-09-08,Chicken Fry,26
+2025-09-09,Chicken Biriyani,55
+2025-09-09,Fried Rice,31
+2025-09-09,Burger,36
+2025-09-09,Pizza,24
+2025-09-09,Pasta,16
+2025-09-09,Chicken Fry,39
+2025-09-10,Chicken Biriyani,64
+2025-09-10,Fried Rice,38
+2025-09-10,Burger,35
+2025-09-10,Pizza,20
+2025-09-10,Pasta,30
+2025-09-10,Chicken Fry,42
+2025-09-11,Chicken Biriyani,80
+2025-09-11,Fried Rice,51
+2025-09-11,Burger,33
+2025-09-11,Pizza,22
+2025-09-11,Pasta,24
+2025-09-11,Chicken Fry,42
+2025-09-12,Chicken Biriyani,55
+2025-09-12,Fried Rice,48
+2025-09-12,Burger,59
+2025-09-12,Pizza,33
+2025-09-12,Pasta,27
+2025-09-12,Chicken Fry,45
+2025-09-13,Chicken Biriyani,110
+2025-09-13,Fried Rice,53
+2025-09-13,Burger,59
+2025-09-13,Pizza,51
+2025-09-13,Pasta,36
+2025-09-13,Chicken Fry,40
+2025-09-14,Chicken Biriyani,80
+2025-09-14,Fried Rice,47
+2025-09-14,Burger,60
+2025-09-14,Pizza,51
+2025-09-14,Pasta,26
+2025-09-14,Chicken Fry,47
+2025-09-15,Chicken Biriyani,60
+2025-09-15,Fried Rice,39
+2025-09-15,Burger,27
+2025-09-15,Pizza,21
+2025-09-15,Pasta,19
+2025-09-15,Chicken Fry,24
+2025-09-16,Chicken Biriyani,52
+2025-09-16,Fried Rice,46
+2025-09-16,Burger,43
+2025-09-16,Pizza,25
+2025-09-16,Pasta,26
+2025-09-16,Chicken Fry,40
+2025-09-17,Chicken Biriyani,66
+2025-09-17,Fried Rice,42
+2025-09-17,Burger,34
+2025-09-17,Pizza,25
+2025-09-17,Pasta,27
+2025-09-17,Chicken Fry,35
+2025-09-18,Chicken Biriyani,65
+2025-09-18,Fried Rice,37
+2025-09-18,Burger,35
+2025-09-18,Pizza,26
+2025-09-18,Pasta,18
+2025-09-18,Chicken Fry,22
+2025-09-19,Chicken Biriyani,78
+2025-09-19,Fried Rice,49
+2025-09-19,Burger,37
+2025-09-19,Pizza,39
+2025-09-19,Pasta,26
+2025-09-19,Chicken Fry,45
+2025-09-20,Chicken Biriyani,85
+2025-09-20,Fried Rice,59
+2025-09-20,Burger,61
+2025-09-20,Pizza,35
+2025-09-20,Pasta,31
+2025-09-20,Chicken Fry,52
+2025-09-21,Chicken Biriyani,87
+2025-09-21,Fried Rice,62
+2025-09-21,Burger,62
+2025-09-21,Pizza,35
+2025-09-21,Pasta,23
+2025-09-21,Chicken Fry,49
+2025-09-22,Chicken Biriyani,73
+2025-09-22,Fried Rice,45
+2025-09-22,Burger,34
+2025-09-22,Pizza,14
+2025-09-22,Pasta,19
+2025-09-22,Chicken Fry,30
+2025-09-23,Chicken Biriyani,53
+2025-09-23,Fried Rice,40
+2025-09-23,Burger,32
+2025-09-23,Pizza,10
+2025-09-23,Pasta,17
+2025-09-23,Chicken Fry,29
+2025-09-24,Chicken Biriyani,46
+2025-09-24,Fried Rice,47
+2025-09-24,Burger,34
+2025-09-24,Pizza,12
+2025-09-24,Pasta,21
+2025-09-24,Chicken Fry,27
+2025-09-25,Chicken Biriyani,89
+2025-09-25,Fried Rice,36
+2025-09-25,Burger,34
+2025-09-25,Pizza,18
+2025-09-25,Pasta,24
+2025-09-25,Chicken Fry,34
+2025-09-26,Chicken Biriyani,92
+2025-09-26,Fried Rice,46
+2025-09-26,Burger,49
+2025-09-26,Pizza,35
+2025-09-26,Pasta,35
+2025-09-26,Chicken Fry,57
+2025-09-27,Chicken Biriyani,89
+2025-09-27,Fried Rice,48
+2025-09-27,Burger,53
+2025-09-27,Pizza,46
+2025-09-27,Pasta,26
+2025-09-27,Chicken Fry,47
+2025-09-28,Chicken Biriyani,104
+2025-09-28,Fried Rice,64
+2025-09-28,Burger,42
+2025-09-28,Pizza,44
+2025-09-28,Pasta,38
+2025-09-28,Chicken Fry,45
+2025-09-29,Chicken Biriyani,57
+2025-09-29,Fried Rice,41
+2025-09-29,Burger,21
+2025-09-29,Pizza,17
+2025-09-29,Pasta,26
+2025-09-29,Chicken Fry,33
+2025-09-30,Chicken Biriyani,46
+2025-09-30,Fried Rice,43
+2025-09-30,Burger,45
+2025-09-30,Pizza,27
+2025-09-30,Pasta,29
+2025-09-30,Chicken Fry,35
+2025-10-01,Chicken Biriyani,54
+2025-10-01,Fried Rice,48
+2025-10-01,Burger,35
+2025-10-01,Pizza,21
+2025-10-01,Pasta,24
+2025-10-01,Chicken Fry,35
+2025-10-02,Chicken Biriyani,85
+2025-10-02,Fried Rice,66
+2025-10-02,Burger,43
+2025-10-02,Pizza,28
+2025-10-02,Pasta,25
+2025-10-02,Chicken Fry,51
+2025-10-03,Chicken Biriyani,45
+2025-10-03,Fried Rice,34
+2025-10-03,Burger,46
+2025-10-03,Pizza,35
+2025-10-03,Pasta,22
+2025-10-03,Chicken Fry,25
+2025-10-04,Chicken Biriyani,107
+2025-10-04,Fried Rice,55
+2025-10-04,Burger,54
+2025-10-04,Pizza,56
+2025-10-04,Pasta,30
+2025-10-04,Chicken Fry,53
+2025-10-05,Chicken Biriyani,93
+2025-10-05,Fried Rice,62
+2025-10-05,Burger,47
+2025-10-05,Pizza,44
+2025-10-05,Pasta,25
+2025-10-05,Chicken Fry,46
+2025-10-06,Chicken Biriyani,51
+2025-10-06,Fried Rice,51
+2025-10-06,Burger,29
+2025-10-06,Pizza,23
+2025-10-06,Pasta,22
+2025-10-06,Chicken Fry,29
+2025-10-07,Chicken Biriyani,61
+2025-10-07,Fried Rice,40
+2025-10-07,Burger,28
+2025-10-07,Pizza,16
+2025-10-07,Pasta,32
+2025-10-07,Chicken Fry,35
+2025-10-08,Chicken Biriyani,61
+2025-10-08,Fried Rice,36
+2025-10-08,Burger,29
+2025-10-08,Pizza,19
+2025-10-08,Pasta,25
+2025-10-08,Chicken Fry,24
+2025-10-09,Chicken Biriyani,66
+2025-10-09,Fried Rice,35
+2025-10-09,Burger,49
+2025-10-09,Pizza,34
+2025-10-09,Pasta,22
+2025-10-09,Chicken Fry,29
+2025-10-10,Chicken Biriyani,65
+2025-10-10,Fried Rice,46
+2025-10-10,Burger,45
+2025-10-10,Pizza,29
+2025-10-10,Pasta,27
+2025-10-10,Chicken Fry,38
+2025-10-11,Chicken Biriyani,79
+2025-10-11,Fried Rice,46
+2025-10-11,Burger,51
+2025-10-11,Pizza,34
+2025-10-11,Pasta,25
+2025-10-11,Chicken Fry,40
+2025-10-12,Chicken Biriyani,79
+2025-10-12,Fried Rice,44
+2025-10-12,Burger,58
+2025-10-12,Pizza,36
+2025-10-12,Pasta,20
+2025-10-12,Chicken Fry,28
+2025-10-13,Chicken Biriyani,58
+2025-10-13,Fried Rice,46
+2025-10-13,Burger,35
+2025-10-13,Pizza,18
+2025-10-13,Pasta,23
+2025-10-13,Chicken Fry,36
+2025-10-14,Chicken Biriyani,57
+2025-10-14,Fried Rice,45
+2025-10-14,Burger,41
+2025-10-14,Pizza,25
+2025-10-14,Pasta,19
+2025-10-14,Chicken Fry,27
+2025-10-15,Chicken Biriyani,53
+2025-10-15,Fried Rice,36
+2025-10-15,Burger,34
+2025-10-15,Pizza,16
+2025-10-15,Pasta,25
+2025-10-15,Chicken Fry,38
+2025-10-16,Chicken Biriyani,71
+2025-10-16,Fried Rice,43
+2025-10-16,Burger,36
+2025-10-16,Pizza,25
+2025-10-16,Pasta,10
+2025-10-16,Chicken Fry,40
+2025-10-17,Chicken Biriyani,86
+2025-10-17,Fried Rice,48
+2025-10-17,Burger,53
+2025-10-17,Pizza,34
+2025-10-17,Pasta,24
+2025-10-17,Chicken Fry,29
+2025-10-18,Chicken Biriyani,69
+2025-10-18,Fried Rice,56
+2025-10-18,Burger,46
+2025-10-18,Pizza,41
+2025-10-18,Pasta,29
+2025-10-18,Chicken Fry,51
+2025-10-19,Chicken Biriyani,110
+2025-10-19,Fried Rice,51
+2025-10-19,Burger,58
+2025-10-19,Pizza,56
+2025-10-19,Pasta,28
+2025-10-19,Chicken Fry,40
+2025-10-20,Chicken Biriyani,65
+2025-10-20,Fried Rice,65
+2025-10-20,Burger,51
+2025-10-20,Pizza,38
+2025-10-20,Pasta,29
+2025-10-20,Chicken Fry,37
+2025-10-21,Chicken Biriyani,68
+2025-10-21,Fried Rice,47
+2025-10-21,Burger,30
+2025-10-21,Pizza,22
+2025-10-21,Pasta,26
+2025-10-21,Chicken Fry,30
+2025-10-22,Chicken Biriyani,52
+2025-10-22,Fried Rice,46
+2025-10-22,Burger,33
+2025-10-22,Pizza,22
+2025-10-22,Pasta,16
+2025-10-22,Chicken Fry,35
+2025-10-23,Chicken Biriyani,68
+2025-10-23,Fried Rice,42
+2025-10-23,Burger,47
+2025-10-23,Pizza,34
+2025-10-23,Pasta,21
+2025-10-23,Chicken Fry,35
+2025-10-24,Chicken Biriyani,81
+2025-10-24,Fried Rice,47
+2025-10-24,Burger,60
+2025-10-24,Pizza,38
+2025-10-24,Pasta,42
+2025-10-24,Chicken Fry,45
+2025-10-25,Chicken Biriyani,89
+2025-10-25,Fried Rice,51
+2025-10-25,Burger,52
+2025-10-25,Pizza,40
+2025-10-25,Pasta,33
+2025-10-25,Chicken Fry,49
+2025-10-26,Chicken Biriyani,88
+2025-10-26,Fried Rice,46
+2025-10-26,Burger,48
+2025-10-26,Pizza,41
+2025-10-26,Pasta,23
+2025-10-26,Chicken Fry,43
+2025-10-27,Chicken Biriyani,57
+2025-10-27,Fried Rice,49
+2025-10-27,Burger,29
+2025-10-27,Pizza,19
+2025-10-27,Pasta,20
+2025-10-27,Chicken Fry,21
+2025-10-28,Chicken Biriyani,41
+2025-10-28,Fried Rice,37
+2025-10-28,Burger,33
+2025-10-28,Pizza,20
+2025-10-28,Pasta,31
+2025-10-28,Chicken Fry,23
+2025-10-29,Chicken Biriyani,77
+2025-10-29,Fried Rice,30
+2025-10-29,Burger,33
+2025-10-29,Pizza,30
+2025-10-29,Pasta,23
+2025-10-29,Chicken Fry,32
+2025-10-30,Chicken Biriyani,68
+2025-10-30,Fried Rice,28
+2025-10-30,Burger,41
+2025-10-30,Pizza,21
+2025-10-30,Pasta,29
+2025-10-30,Chicken Fry,38
+2025-10-31,Chicken Biriyani,94
+2025-10-31,Fried Rice,49
+2025-10-31,Burger,47
+2025-10-31,Pizza,41
+2025-10-31,Pasta,23
+2025-10-31,Chicken Fry,53
+2025-11-01,Chicken Biriyani,86
+2025-11-01,Fried Rice,46
+2025-11-01,Burger,51
+2025-11-01,Pizza,49
+2025-11-01,Pasta,28
+2025-11-01,Chicken Fry,43
+2025-11-02,Chicken Biriyani,87
+2025-11-02,Fried Rice,53
+2025-11-02,Burger,59
+2025-11-02,Pizza,39
+2025-11-02,Pasta,18
+2025-11-02,Chicken Fry,40
+2025-11-03,Chicken Biriyani,54
+2025-11-03,Fried Rice,35
+2025-11-03,Burger,23
+2025-11-03,Pizza,20
+2025-11-03,Pasta,23
+2025-11-03,Chicken Fry,34
+2025-11-04,Chicken Biriyani,55
+2025-11-04,Fried Rice,36
+2025-11-04,Burger,29
+2025-11-04,Pizza,20
+2025-11-04,Pasta,22
+2025-11-04,Chicken Fry,27
+2025-11-05,Chicken Biriyani,51
+2025-11-05,Fried Rice,43
+2025-11-05,Burger,43
+2025-11-05,Pizza,13
+2025-11-05,Pasta,21
+2025-11-05,Chicken Fry,34
+2025-11-06,Chicken Biriyani,57
+2025-11-06,Fried Rice,40
+2025-11-06,Burger,36
+2025-11-06,Pizza,20
+2025-11-06,Pasta,27
+2025-11-06,Chicken Fry,28
+2025-11-07,Chicken Biriyani,76
+2025-11-07,Fried Rice,44
+2025-11-07,Burger,37
+2025-11-07,Pizza,47
+2025-11-07,Pasta,25
+2025-11-07,Chicken Fry,55
+2025-11-08,Chicken Biriyani,91
+2025-11-08,Fried Rice,45
+2025-11-08,Burger,54
+2025-11-08,Pizza,44
+2025-11-08,Pasta,25
+2025-11-08,Chicken Fry,56
+2025-11-09,Chicken Biriyani,102
+2025-11-09,Fried Rice,55
+2025-11-09,Burger,56
+2025-11-09,Pizza,54
+2025-11-09,Pasta,28
+2025-11-09,Chicken Fry,31
+2025-11-10,Chicken Biriyani,63
+2025-11-10,Fried Rice,35
+2025-11-10,Burger,32
+2025-11-10,Pizza,27
+2025-11-10,Pasta,18
+2025-11-10,Chicken Fry,28
+2025-11-11,Chicken Biriyani,51
+2025-11-11,Fried Rice,38
+2025-11-11,Burger,25
+2025-11-11,Pizza,25
+2025-11-11,Pasta,28
+2025-11-11,Chicken Fry,30
+2025-11-12,Chicken Biriyani,51
+2025-11-12,Fried Rice,35
+2025-11-12,Burger,27
+2025-11-12,Pizza,18
+2025-11-12,Pasta,18
+2025-11-12,Chicken Fry,33
+2025-11-13,Chicken Biriyani,95
+2025-11-13,Fried Rice,41
+2025-11-13,Burger,27
+2025-11-13,Pizza,36
+2025-11-13,Pasta,21
+2025-11-13,Chicken Fry,41
+2025-11-14,Chicken Biriyani,94
+2025-11-14,Fried Rice,39
+2025-11-14,Burger,45
+2025-11-14,Pizza,24
+2025-11-14,Pasta,28
+2025-11-14,Chicken Fry,48
+2025-11-15,Chicken Biriyani,87
+2025-11-15,Fried Rice,55
+2025-11-15,Burger,50
+2025-11-15,Pizza,36
+2025-11-15,Pasta,29
+2025-11-15,Chicken Fry,45
+2025-11-16,Chicken Biriyani,91
+2025-11-16,Fried Rice,51
+2025-11-16,Burger,55
+2025-11-16,Pizza,48
+2025-11-16,Pasta,25
+2025-11-16,Chicken Fry,50
+2025-11-17,Chicken Biriyani,47
+2025-11-17,Fried Rice,31
+2025-11-17,Burger,36
+2025-11-17,Pizza,17
+2025-11-17,Pasta,34
+2025-11-17,Chicken Fry,29
+2025-11-18,Chicken Biriyani,56
+2025-11-18,Fried Rice,33
+2025-11-18,Burger,18
+2025-11-18,Pizza,23
+2025-11-18,Pasta,14
+2025-11-18,Chicken Fry,29
+2025-11-19,Chicken Biriyani,46
+2025-11-19,Fried Rice,37
+2025-11-19,Burger,36
+2025-11-19,Pizza,17
+2025-11-19,Pasta,16
+2025-11-19,Chicken Fry,35
+2025-11-20,Chicken Biriyani,65
+2025-11-20,Fried Rice,42
+2025-11-20,Burger,44
+2025-11-20,Pizza,23
+2025-11-20,Pasta,21
+2025-11-20,Chicken Fry,38
+2025-11-21,Chicken Biriyani,79
+2025-11-21,Fried Rice,43
+2025-11-21,Burger,48
+2025-11-21,Pizza,38
+2025-11-21,Pasta,29
+2025-11-21,Chicken Fry,31
+2025-11-22,Chicken Biriyani,85
+2025-11-22,Fried Rice,47
+2025-11-22,Burger,54
+2025-11-22,Pizza,48
+2025-11-22,Pasta,24
+2025-11-22,Chicken Fry,48
+2025-11-23,Chicken Biriyani,93
+2025-11-23,Fried Rice,49
+2025-11-23,Burger,48
+2025-11-23,Pizza,38
+2025-11-23,Pasta,27
+2025-11-23,Chicken Fry,36
+2025-11-24,Chicken Biriyani,43
+2025-11-24,Fried Rice,34
+2025-11-24,Burger,22
+2025-11-24,Pizza,24
+2025-11-24,Pasta,22
+2025-11-24,Chicken Fry,30
+2025-11-25,Chicken Biriyani,71
+2025-11-25,Fried Rice,49
+2025-11-25,Burger,33
+2025-11-25,Pizza,19
+2025-11-25,Pasta,30
+2025-11-25,Chicken Fry,34
+2025-11-26,Chicken Biriyani,57
+2025-11-26,Fried Rice,50
+2025-11-26,Burger,40
+2025-11-26,Pizza,24
+2025-11-26,Pasta,24
+2025-11-26,Chicken Fry,33
+2025-11-27,Chicken Biriyani,56
+2025-11-27,Fried Rice,38
+2025-11-27,Burger,34
+2025-11-27,Pizza,27
+2025-11-27,Pasta,29
+2025-11-27,Chicken Fry,18
+2025-11-28,Chicken Biriyani,77
+2025-11-28,Fried Rice,43
+2025-11-28,Burger,65
+2025-11-28,Pizza,34
+2025-11-28,Pasta,29
+2025-11-28,Chicken Fry,45
+2025-11-29,Chicken Biriyani,95
+2025-11-29,Fried Rice,37
+2025-11-29,Burger,69
+2025-11-29,Pizza,32
+2025-11-29,Pasta,22
+2025-11-29,Chicken Fry,44
+2025-11-30,Chicken Biriyani,96
+2025-11-30,Fried Rice,48
+2025-11-30,Burger,49
+2025-11-30,Pizza,43
+2025-11-30,Pasta,16
+2025-11-30,Chicken Fry,47
+2025-12-01,Chicken Biriyani,69
+2025-12-01,Fried Rice,43
+2025-12-01,Burger,35
+2025-12-01,Pizza,13
+2025-12-01,Pasta,20
+2025-12-01,Chicken Fry,26
+2025-12-02,Chicken Biriyani,52
+2025-12-02,Fried Rice,51
+2025-12-02,Burger,35
+2025-12-02,Pizza,22
+2025-12-02,Pasta,21
+2025-12-02,Chicken Fry,28
+2025-12-03,Chicken Biriyani,57
+2025-12-03,Fried Rice,45
+2025-12-03,Burger,31
+2025-12-03,Pizza,23
+2025-12-03,Pasta,30
+2025-12-03,Chicken Fry,19
+2025-12-04,Chicken Biriyani,59
+2025-12-04,Fried Rice,53
+2025-12-04,Burger,37
+2025-12-04,Pizza,17
+2025-12-04,Pasta,32
+2025-12-04,Chicken Fry,33
+2025-12-05,Chicken Biriyani,65
+2025-12-05,Fried Rice,52
+2025-12-05,Burger,49
+2025-12-05,Pizza,36
+2025-12-05,Pasta,28
+2025-12-05,Chicken Fry,40
+2025-12-06,Chicken Biriyani,73
+2025-12-06,Fried Rice,52
+2025-12-06,Burger,62
+2025-12-06,Pizza,45
+2025-12-06,Pasta,26
+2025-12-06,Chicken Fry,44
+2025-12-07,Chicken Biriyani,82
+2025-12-07,Fried Rice,44
+2025-12-07,Burger,68
+2025-12-07,Pizza,54
+2025-12-07,Pasta,28
+2025-12-07,Chicken Fry,33
+2025-12-08,Chicken Biriyani,62
+2025-12-08,Fried Rice,31
+2025-12-08,Burger,31
+2025-12-08,Pizza,21
+2025-12-08,Pasta,26
+2025-12-08,Chicken Fry,35
+2025-12-09,Chicken Biriyani,46
+2025-12-09,Fried Rice,32
+2025-12-09,Burger,34
+2025-12-09,Pizza,21
+2025-12-09,Pasta,21
+2025-12-09,Chicken Fry,31
+2025-12-10,Chicken Biriyani,45
+2025-12-10,Fried Rice,53
+2025-12-10,Burger,30
+2025-12-10,Pizza,18
+2025-12-10,Pasta,21
+2025-12-10,Chicken Fry,34
+2025-12-11,Chicken Biriyani,59
+2025-12-11,Fried Rice,46
+2025-12-11,Burger,40
+2025-12-11,Pizza,27
+2025-12-11,Pasta,16
+2025-12-11,Chicken Fry,34
+2025-12-12,Chicken Biriyani,74
+2025-12-12,Fried Rice,53
+2025-12-12,Burger,52
+2025-12-12,Pizza,32
+2025-12-12,Pasta,33
+2025-12-12,Chicken Fry,47
+2025-12-13,Chicken Biriyani,82
+2025-12-13,Fried Rice,58
+2025-12-13,Burger,69
+2025-12-13,Pizza,38
+2025-12-13,Pasta,21
+2025-12-13,Chicken Fry,44
+2025-12-14,Chicken Biriyani,85
+2025-12-14,Fried Rice,52
+2025-12-14,Burger,59
+2025-12-14,Pizza,45
+2025-12-14,Pasta,21
+2025-12-14,Chicken Fry,51
+2025-12-15,Chicken Biriyani,44
+2025-12-15,Fried Rice,41
+2025-12-15,Burger,41
+2025-12-15,Pizza,14
+2025-12-15,Pasta,15
+2025-12-15,Chicken Fry,28
+2025-12-16,Chicken Biriyani,74
+2025-12-16,Fried Rice,35
+2025-12-16,Burger,31
+2025-12-16,Pizza,23
+2025-12-16,Pasta,17
+2025-12-16,Chicken Fry,25
+2025-12-17,Chicken Biriyani,66
+2025-12-17,Fried Rice,44
+2025-12-17,Burger,35
+2025-12-17,Pizza,28
+2025-12-17,Pasta,23
+2025-12-17,Chicken Fry,39
+2025-12-18,Chicken Biriyani,50
+2025-12-18,Fried Rice,50
+2025-12-18,Burger,43
+2025-12-18,Pizza,21
+2025-12-18,Pasta,22
+2025-12-18,Chicken Fry,35
+2025-12-19,Chicken Biriyani,82
+2025-12-19,Fried Rice,44
+2025-12-19,Burger,43
+2025-12-19,Pizza,35
+2025-12-19,Pasta,32
+2025-12-19,Chicken Fry,45
+2025-12-20,Chicken Biriyani,90
+2025-12-20,Fried Rice,48
+2025-12-20,Burger,48
+2025-12-20,Pizza,55
+2025-12-20,Pasta,28
+2025-12-20,Chicken Fry,42
+2025-12-21,Chicken Biriyani,106
+2025-12-21,Fried Rice,47
+2025-12-21,Burger,45
+2025-12-21,Pizza,40
+2025-12-21,Pasta,16
+2025-12-21,Chicken Fry,34
+2025-12-22,Chicken Biriyani,56
+2025-12-22,Fried Rice,38
+2025-12-22,Burger,35
+2025-12-22,Pizza,27
+2025-12-22,Pasta,29
+2025-12-22,Chicken Fry,31
+2025-12-23,Chicken Biriyani,59
+2025-12-23,Fried Rice,26
+2025-12-23,Burger,34
+2025-12-23,Pizza,14
+2025-12-23,Pasta,19
+2025-12-23,Chicken Fry,40
+2025-12-24,Chicken Biriyani,66
+2025-12-24,Fried Rice,50
+2025-12-24,Burger,25
+2025-12-24,Pizza,16
+2025-12-24,Pasta,26
+2025-12-24,Chicken Fry,41
+2025-12-25,Chicken Biriyani,102
+2025-12-25,Fried Rice,63
+2025-12-25,Burger,52
+2025-12-25,Pizza,40
+2025-12-25,Pasta,37
+2025-12-25,Chicken Fry,40
+2025-12-26,Chicken Biriyani,82
+2025-12-26,Fried Rice,44
+2025-12-26,Burger,44
+2025-12-26,Pizza,28
+2025-12-26,Pasta,23
+2025-12-26,Chicken Fry,51
+2025-12-27,Chicken Biriyani,95
+2025-12-27,Fried Rice,57
+2025-12-27,Burger,51
+2025-12-27,Pizza,37
+2025-12-27,Pasta,26
+2025-12-27,Chicken Fry,45
+2025-12-28,Chicken Biriyani,92
+2025-12-28,Fried Rice,51
+2025-12-28,Burger,43
+2025-12-28,Pizza,29
+2025-12-28,Pasta,28
+2025-12-28,Chicken Fry,40
+2025-12-29,Chicken Biriyani,58
+2025-12-29,Fried Rice,28
+2025-12-29,Burger,28
+2025-12-29,Pizza,14
+2025-12-29,Pasta,20
+2025-12-29,Chicken Fry,20
+2025-12-30,Chicken Biriyani,38
+2025-12-30,Fried Rice,33
+2025-12-30,Burger,40
+2025-12-30,Pizza,14
+2025-12-30,Pasta,21
+2025-12-30,Chicken Fry,26
+2025-12-31,Chicken Biriyani,67
+2025-12-31,Fried Rice,43
+2025-12-31,Burger,38
+2025-12-31,Pizza,27
+2025-12-31,Pasta,24
+2025-12-31,Chicken Fry,30
+2026-01-01,Chicken Biriyani,85
+2026-01-01,Fried Rice,60
+2026-01-01,Burger,44
+2026-01-01,Pizza,38
+2026-01-01,Pasta,34
+2026-01-01,Chicken Fry,47
+2026-01-02,Chicken Biriyani,72
+2026-01-02,Fried Rice,45
+2026-01-02,Burger,44
+2026-01-02,Pizza,44
+2026-01-02,Pasta,33
+2026-01-02,Chicken Fry,59
+2026-01-03,Chicken Biriyani,82
+2026-01-03,Fried Rice,41
+2026-01-03,Burger,50
+2026-01-03,Pizza,58
+2026-01-03,Pasta,24
+2026-01-03,Chicken Fry,56
+2026-01-04,Chicken Biriyani,72
+2026-01-04,Fried Rice,43
+2026-01-04,Burger,43
+2026-01-04,Pizza,40
+2026-01-04,Pasta,26
+2026-01-04,Chicken Fry,45
+2026-01-05,Chicken Biriyani,56
+2026-01-05,Fried Rice,40
+2026-01-05,Burger,26
+2026-01-05,Pizza,25
+2026-01-05,Pasta,15
+2026-01-05,Chicken Fry,30
+2026-01-06,Chicken Biriyani,56
+2026-01-06,Fried Rice,31
+2026-01-06,Burger,38
+2026-01-06,Pizza,19
+2026-01-06,Pasta,26
+2026-01-06,Chicken Fry,26
+2026-01-07,Chicken Biriyani,63
+2026-01-07,Fried Rice,51
+2026-01-07,Burger,28
+2026-01-07,Pizza,27
+2026-01-07,Pasta,24
+2026-01-07,Chicken Fry,25
+2026-01-08,Chicken Biriyani,46
+2026-01-08,Fried Rice,45
+2026-01-08,Burger,35
+2026-01-08,Pizza,33
+2026-01-08,Pasta,31
+2026-01-08,Chicken Fry,40
+2026-01-09,Chicken Biriyani,78
+2026-01-09,Fried Rice,59
+2026-01-09,Burger,51
+2026-01-09,Pizza,44
+2026-01-09,Pasta,34
+2026-01-09,Chicken Fry,32
+2026-01-10,Chicken Biriyani,81
+2026-01-10,Fried Rice,41
+2026-01-10,Burger,57
+2026-01-10,Pizza,48
+2026-01-10,Pasta,34
+2026-01-10,Chicken Fry,42
+2026-01-11,Chicken Biriyani,102
+2026-01-11,Fried Rice,59
+2026-01-11,Burger,63
+2026-01-11,Pizza,46
+2026-01-11,Pasta,28
+2026-01-11,Chicken Fry,39
+2026-01-12,Chicken Biriyani,54
+2026-01-12,Fried Rice,41
+2026-01-12,Burger,29
+2026-01-12,Pizza,22
+2026-01-12,Pasta,23
+2026-01-12,Chicken Fry,22
+2026-01-13,Chicken Biriyani,59
+2026-01-13,Fried Rice,54
+2026-01-13,Burger,28
+2026-01-13,Pizza,18
+2026-01-13,Pasta,21
+2026-01-13,Chicken Fry,30
+2026-01-14,Chicken Biriyani,57
+2026-01-14,Fried Rice,36
+2026-01-14,Burger,31
+2026-01-14,Pizza,25
+2026-01-14,Pasta,27
+2026-01-14,Chicken Fry,30
+2026-01-15,Chicken Biriyani,54
+2026-01-15,Fried Rice,41
+2026-01-15,Burger,36
+2026-01-15,Pizza,24
+2026-01-15,Pasta,26
+2026-01-15,Chicken Fry,32
+2026-01-16,Chicken Biriyani,86
+2026-01-16,Fried Rice,50
+2026-01-16,Burger,58
+2026-01-16,Pizza,39
+2026-01-16,Pasta,30
+2026-01-16,Chicken Fry,50
+2026-01-17,Chicken Biriyani,82
+2026-01-17,Fried Rice,60
+2026-01-17,Burger,54
+2026-01-17,Pizza,49
+2026-01-17,Pasta,27
+2026-01-17,Chicken Fry,49
+2026-01-18,Chicken Biriyani,93
+2026-01-18,Fried Rice,42
+2026-01-18,Burger,45
+2026-01-18,Pizza,47
+2026-01-18,Pasta,22
+2026-01-18,Chicken Fry,42
+2026-01-19,Chicken Biriyani,61
+2026-01-19,Fried Rice,43
+2026-01-19,Burger,27
+2026-01-19,Pizza,17
+2026-01-19,Pasta,23
+2026-01-19,Chicken Fry,36
+2026-01-20,Chicken Biriyani,55
+2026-01-20,Fried Rice,35
+2026-01-20,Burger,40
+2026-01-20,Pizza,20
+2026-01-20,Pasta,20
+2026-01-20,Chicken Fry,32
+2026-01-21,Chicken Biriyani,67
+2026-01-21,Fried Rice,40
+2026-01-21,Burger,35
+2026-01-21,Pizza,29
+2026-01-21,Pasta,24
+2026-01-21,Chicken Fry,34
+2026-01-22,Chicken Biriyani,49
+2026-01-22,Fried Rice,40
+2026-01-22,Burger,48
+2026-01-22,Pizza,21
+2026-01-22,Pasta,34
+2026-01-22,Chicken Fry,21
+2026-01-23,Chicken Biriyani,82
+2026-01-23,Fried Rice,44
+2026-01-23,Burger,48
+2026-01-23,Pizza,44
+2026-01-23,Pasta,16
+2026-01-23,Chicken Fry,48
+2026-01-24,Chicken Biriyani,102
+2026-01-24,Fried Rice,66
+2026-01-24,Burger,71
+2026-01-24,Pizza,43
+2026-01-24,Pasta,27
+2026-01-24,Chicken Fry,55
+2026-01-25,Chicken Biriyani,90
+2026-01-25,Fried Rice,56
+2026-01-25,Burger,66
+2026-01-25,Pizza,42
+2026-01-25,Pasta,44
+2026-01-25,Chicken Fry,47
+2026-01-26,Chicken Biriyani,77
+2026-01-26,Fried Rice,72
+2026-01-26,Burger,45
+2026-01-26,Pizza,32
+2026-01-26,Pasta,28
+2026-01-26,Chicken Fry,31
+2026-01-27,Chicken Biriyani,53
+2026-01-27,Fried Rice,46
+2026-01-27,Burger,32
+2026-01-27,Pizza,20
+2026-01-27,Pasta,25
+2026-01-27,Chicken Fry,31
+2026-01-28,Chicken Biriyani,56
+2026-01-28,Fried Rice,47
+2026-01-28,Burger,32
+2026-01-28,Pizza,19
+2026-01-28,Pasta,31
+2026-01-28,Chicken Fry,21
+2026-01-29,Chicken Biriyani,65
+2026-01-29,Fried Rice,44
+2026-01-29,Burger,44
+2026-01-29,Pizza,16
+2026-01-29,Pasta,30
+2026-01-29,Chicken Fry,30
+2026-01-30,Chicken Biriyani,74
+2026-01-30,Fried Rice,47
+2026-01-30,Burger,34
+2026-01-30,Pizza,46
+2026-01-30,Pasta,37
+2026-01-30,Chicken Fry,33
+2026-01-31,Chicken Biriyani,82
+2026-01-31,Fried Rice,48
+2026-01-31,Burger,46
+2026-01-31,Pizza,41
+2026-01-31,Pasta,30
+2026-01-31,Chicken Fry,57
+2026-02-01,Chicken Biriyani,93
+2026-02-01,Fried Rice,51
+2026-02-01,Burger,59
+2026-02-01,Pizza,55
+2026-02-01,Pasta,25
+2026-02-01,Chicken Fry,35
+2026-02-02,Chicken Biriyani,63
+2026-02-02,Fried Rice,40
+2026-02-02,Burger,26
+2026-02-02,Pizza,17
+2026-02-02,Pasta,27
+2026-02-02,Chicken Fry,29
+2026-02-03,Chicken Biriyani,51
+2026-02-03,Fried Rice,33
+2026-02-03,Burger,36
+2026-02-03,Pizza,26
+2026-02-03,Pasta,27
+2026-02-03,Chicken Fry,33
+2026-02-04,Chicken Biriyani,59
+2026-02-04,Fried Rice,33
+2026-02-04,Burger,26
+2026-02-04,Pizza,20
+2026-02-04,Pasta,27
+2026-02-04,Chicken Fry,45
+2026-02-05,Chicken Biriyani,66
+2026-02-05,Fried Rice,46
+2026-02-05,Burger,38
+2026-02-05,Pizza,38
+2026-02-05,Pasta,25
+2026-02-05,Chicken Fry,42
+2026-02-06,Chicken Biriyani,86
+2026-02-06,Fried Rice,51
+2026-02-06,Burger,49
+2026-02-06,Pizza,35
+2026-02-06,Pasta,33
+2026-02-06,Chicken Fry,46
+2026-02-07,Chicken Biriyani,91
+2026-02-07,Fried Rice,57
+2026-02-07,Burger,61
+2026-02-07,Pizza,45
+2026-02-07,Pasta,31
+2026-02-07,Chicken Fry,44
+2026-02-08,Chicken Biriyani,93
+2026-02-08,Fried Rice,40
+2026-02-08,Burger,55
+2026-02-08,Pizza,37
+2026-02-08,Pasta,27
+2026-02-08,Chicken Fry,58
+2026-02-09,Chicken Biriyani,66
+2026-02-09,Fried Rice,49
+2026-02-09,Burger,32
+2026-02-09,Pizza,19
+2026-02-09,Pasta,23
+2026-02-09,Chicken Fry,31
+2026-02-10,Chicken Biriyani,56
+2026-02-10,Fried Rice,45
+2026-02-10,Burger,31
+2026-02-10,Pizza,20
+2026-02-10,Pasta,25
+2026-02-10,Chicken Fry,31
+2026-02-11,Chicken Biriyani,55
+2026-02-11,Fried Rice,60
+2026-02-11,Burger,51
+2026-02-11,Pizza,32
+2026-02-11,Pasta,28
+2026-02-11,Chicken Fry,42
+2026-02-12,Chicken Biriyani,87
+2026-02-12,Fried Rice,53
+2026-02-12,Burger,38
+2026-02-12,Pizza,24
+2026-02-12,Pasta,19
+2026-02-12,Chicken Fry,32
+2026-02-13,Chicken Biriyani,101
+2026-02-13,Fried Rice,39
+2026-02-13,Burger,47
+2026-02-13,Pizza,46
+2026-02-13,Pasta,35
+2026-02-13,Chicken Fry,33
+2026-02-14,Chicken Biriyani,105
+2026-02-14,Fried Rice,47
+2026-02-14,Burger,64
+2026-02-14,Pizza,47
+2026-02-14,Pasta,35
+2026-02-14,Chicken Fry,42
+2026-02-15,Chicken Biriyani,113
+2026-02-15,Fried Rice,54
+2026-02-15,Burger,55
+2026-02-15,Pizza,33
+2026-02-15,Pasta,30
+2026-02-15,Chicken Fry,44
+2026-02-16,Chicken Biriyani,59
+2026-02-16,Fried Rice,52
+2026-02-16,Burger,30
+2026-02-16,Pizza,16
+2026-02-16,Pasta,18
+2026-02-16,Chicken Fry,31
+2026-02-17,Chicken Biriyani,70
+2026-02-17,Fried Rice,50
+2026-02-17,Burger,30
+2026-02-17,Pizza,27
+2026-02-17,Pasta,16
+2026-02-17,Chicken Fry,29
+2026-02-18,Chicken Biriyani,63
+2026-02-18,Fried Rice,49
+2026-02-18,Burger,37
+2026-02-18,Pizza,24
+2026-02-18,Pasta,16
+2026-02-18,Chicken Fry,36
+2026-02-19,Chicken Biriyani,66
+2026-02-19,Fried Rice,46
+2026-02-19,Burger,33
+2026-02-19,Pizza,27
+2026-02-19,Pasta,18
+2026-02-19,Chicken Fry,30
+2026-02-20,Chicken Biriyani,88
+2026-02-20,Fried Rice,60
+2026-02-20,Burger,48
+2026-02-20,Pizza,44
+2026-02-20,Pasta,30
+2026-02-20,Chicken Fry,49
+2026-02-21,Chicken Biriyani,77
+2026-02-21,Fried Rice,57
+2026-02-21,Burger,74
+2026-02-21,Pizza,39
+2026-02-21,Pasta,24
+2026-02-21,Chicken Fry,40
+2026-02-22,Chicken Biriyani,84
+2026-02-22,Fried Rice,49
+2026-02-22,Burger,64
+2026-02-22,Pizza,41
+2026-02-22,Pasta,28
+2026-02-22,Chicken Fry,48
+2026-02-23,Chicken Biriyani,50
+2026-02-23,Fried Rice,40
+2026-02-23,Burger,38
+2026-02-23,Pizza,24
+2026-02-23,Pasta,30
+2026-02-23,Chicken Fry,33
+2026-02-24,Chicken Biriyani,67
+2026-02-24,Fried Rice,40
+2026-02-24,Burger,26
+2026-02-24,Pizza,34
+2026-02-24,Pasta,25
+2026-02-24,Chicken Fry,27
+2026-02-25,Chicken Biriyani,91
+2026-02-25,Fried Rice,64
+2026-02-25,Burger,41
+2026-02-25,Pizza,23
+2026-02-25,Pasta,28
+2026-02-25,Chicken Fry,39
+2026-02-26,Chicken Biriyani,87
+2026-02-26,Fried Rice,47
+2026-02-26,Burger,38
+2026-02-26,Pizza,21
+2026-02-26,Pasta,33
+2026-02-26,Chicken Fry,38
+2026-02-27,Chicken Biriyani,72
+2026-02-27,Fried Rice,52
+2026-02-27,Burger,40
+2026-02-27,Pizza,43
+2026-02-27,Pasta,21
+2026-02-27,Chicken Fry,48
+2026-02-28,Chicken Biriyani,108
+2026-02-28,Fried Rice,55
+2026-02-28,Burger,63
+2026-02-28,Pizza,58
+2026-02-28,Pasta,36
+2026-02-28,Chicken Fry,38
+2026-03-01,Chicken Biriyani,114
+2026-03-01,Fried Rice,58
+2026-03-01,Burger,75
+2026-03-01,Pizza,55
+2026-03-01,Pasta,28
+2026-03-01,Chicken Fry,47
+2026-03-02,Chicken Biriyani,62
+2026-03-02,Fried Rice,59
+2026-03-02,Burger,30
+2026-03-02,Pizza,21
+2026-03-02,Pasta,23
+2026-03-02,Chicken Fry,39
+2026-03-03,Chicken Biriyani,81
+2026-03-03,Fried Rice,37
+2026-03-03,Burger,41
+2026-03-03,Pizza,24
+2026-03-03,Pasta,22
+2026-03-03,Chicken Fry,39
+2026-03-04,Chicken Biriyani,68
+2026-03-04,Fried Rice,48
+2026-03-04,Burger,44
+2026-03-04,Pizza,25
+2026-03-04,Pasta,28
+2026-03-04,Chicken Fry,28
+2026-03-05,Chicken Biriyani,80
+2026-03-05,Fried Rice,53
+2026-03-05,Burger,46
+2026-03-05,Pizza,34
+2026-03-05,Pasta,27
+2026-03-05,Chicken Fry,42
+2026-03-06,Chicken Biriyani,109
+2026-03-06,Fried Rice,55
+2026-03-06,Burger,63
+2026-03-06,Pizza,34
+2026-03-06,Pasta,21
+2026-03-06,Chicken Fry,42
+2026-03-07,Chicken Biriyani,99
+2026-03-07,Fried Rice,61
+2026-03-07,Burger,59
+2026-03-07,Pizza,60
+2026-03-07,Pasta,29
+2026-03-07,Chicken Fry,55
+2026-03-08,Chicken Biriyani,106
+2026-03-08,Fried Rice,64
+2026-03-08,Burger,42
+2026-03-08,Pizza,47
+2026-03-08,Pasta,31
+2026-03-08,Chicken Fry,45
+2026-03-09,Chicken Biriyani,62
+2026-03-09,Fried Rice,55
+2026-03-09,Burger,36
+2026-03-09,Pizza,19
+2026-03-09,Pasta,17
+2026-03-09,Chicken Fry,42
+2026-03-10,Chicken Biriyani,74
+2026-03-10,Fried Rice,52
+2026-03-10,Burger,44
+2026-03-10,Pizza,25
+2026-03-10,Pasta,26
+2026-03-10,Chicken Fry,38
+2026-03-11,Chicken Biriyani,80
+2026-03-11,Fried Rice,37
+2026-03-11,Burger,34
+2026-03-11,Pizza,33
+2026-03-11,Pasta,32
+2026-03-11,Chicken Fry,43
+2026-03-12,Chicken Biriyani,79
+2026-03-12,Fried Rice,55
+2026-03-12,Burger,39
+2026-03-12,Pizza,28
+2026-03-12,Pasta,18
+2026-03-12,Chicken Fry,41
+2026-03-13,Chicken Biriyani,110
+2026-03-13,Fried Rice,73
+2026-03-13,Burger,55
+2026-03-13,Pizza,38
+2026-03-13,Pasta,25
+2026-03-13,Chicken Fry,26
+2026-03-14,Chicken Biriyani,106
+2026-03-14,Fried Rice,45
+2026-03-14,Burger,55
+2026-03-14,Pizza,51
+2026-03-14,Pasta,38
+2026-03-14,Chicken Fry,51
+2026-03-15,Chicken Biriyani,103
+2026-03-15,Fried Rice,67
+2026-03-15,Burger,44
+2026-03-15,Pizza,43
+2026-03-15,Pasta,37
+2026-03-15,Chicken Fry,52
+2026-03-16,Chicken Biriyani,66
+2026-03-16,Fried Rice,32
+2026-03-16,Burger,28
+2026-03-16,Pizza,25
+2026-03-16,Pasta,33
+2026-03-16,Chicken Fry,35
+2026-03-17,Chicken Biriyani,67
+2026-03-17,Fried Rice,32
+2026-03-17,Burger,38
+2026-03-17,Pizza,17
+2026-03-17,Pasta,29
+2026-03-17,Chicken Fry,32
+2026-03-18,Chicken Biriyani,62
+2026-03-18,Fried Rice,45
+2026-03-18,Burger,51
+2026-03-18,Pizza,21
+2026-03-18,Pasta,30
+2026-03-18,Chicken Fry,36
+2026-03-19,Chicken Biriyani,90
+2026-03-19,Fried Rice,60
+2026-03-19,Burger,39
+2026-03-19,Pizza,30
+2026-03-19,Pasta,34
+2026-03-19,Chicken Fry,33
+2026-03-20,Chicken Biriyani,134
+2026-03-20,Fried Rice,60
+2026-03-20,Burger,60
+2026-03-20,Pizza,76
+2026-03-20,Pasta,34
+2026-03-20,Chicken Fry,65
+2026-03-21,Chicken Biriyani,105
+2026-03-21,Fried Rice,68
+2026-03-21,Burger,56
+2026-03-21,Pizza,54
+2026-03-21,Pasta,23
+2026-03-21,Chicken Fry,49
+2026-03-22,Chicken Biriyani,109
+2026-03-22,Fried Rice,43
+2026-03-22,Burger,73
+2026-03-22,Pizza,61
+2026-03-22,Pasta,28
+2026-03-22,Chicken Fry,41
+2026-03-23,Chicken Biriyani,84
+2026-03-23,Fried Rice,43
+2026-03-23,Burger,33
+2026-03-23,Pizza,20
+2026-03-23,Pasta,30
+2026-03-23,Chicken Fry,23
+2026-03-24,Chicken Biriyani,75
+2026-03-24,Fried Rice,45
+2026-03-24,Burger,40
+2026-03-24,Pizza,24
+2026-03-24,Pasta,32
+2026-03-24,Chicken Fry,35
+2026-03-25,Chicken Biriyani,62
+2026-03-25,Fried Rice,45
+2026-03-25,Burger,29
+2026-03-25,Pizza,18
+2026-03-25,Pasta,30
+2026-03-25,Chicken Fry,34
+2026-03-26,Chicken Biriyani,74
+2026-03-26,Fried Rice,52
+2026-03-26,Burger,43
+2026-03-26,Pizza,25
+2026-03-26,Pasta,32
+2026-03-26,Chicken Fry,48
+2026-03-27,Chicken Biriyani,81
+2026-03-27,Fried Rice,56
+2026-03-27,Burger,59
+2026-03-27,Pizza,41
+2026-03-27,Pasta,30
+2026-03-27,Chicken Fry,48
+2026-03-28,Chicken Biriyani,111
+2026-03-28,Fried Rice,60
+2026-03-28,Burger,79
+2026-03-28,Pizza,44
+2026-03-28,Pasta,24
+2026-03-28,Chicken Fry,53
+2026-03-29,Chicken Biriyani,104
+2026-03-29,Fried Rice,51
+2026-03-29,Burger,68
+2026-03-29,Pizza,48
+2026-03-29,Pasta,34
+2026-03-29,Chicken Fry,35
+2026-03-30,Chicken Biriyani,62
+2026-03-30,Fried Rice,39
+2026-03-30,Burger,29
+2026-03-30,Pizza,27
+2026-03-30,Pasta,31
+2026-03-30,Chicken Fry,44
+2026-03-31,Chicken Biriyani,72
+2026-03-31,Fried Rice,51
+2026-03-31,Burger,31
+2026-03-31,Pizza,17
+2026-03-31,Pasta,27
+2026-03-31,Chicken Fry,35
+2026-04-01,Chicken Biriyani,59
+2026-04-01,Fried Rice,50
+2026-04-01,Burger,45
+2026-04-01,Pizza,31
+2026-04-01,Pasta,27
+2026-04-01,Chicken Fry,37
+2026-04-02,Chicken Biriyani,85
+2026-04-02,Fried Rice,56
+2026-04-02,Burger,39
+2026-04-02,Pizza,40
+2026-04-02,Pasta,34
+2026-04-02,Chicken Fry,51
+2026-04-03,Chicken Biriyani,124
+2026-04-03,Fried Rice,49
+2026-04-03,Burger,76
+2026-04-03,Pizza,44
+2026-04-03,Pasta,33
+2026-04-03,Chicken Fry,58
+2026-04-04,Chicken Biriyani,109
+2026-04-04,Fried Rice,65
+2026-04-04,Burger,72
+2026-04-04,Pizza,51
+2026-04-04,Pasta,41
+2026-04-04,Chicken Fry,66
+2026-04-05,Chicken Biriyani,96
+2026-04-05,Fried Rice,48
+2026-04-05,Burger,79
+2026-04-05,Pizza,60
+2026-04-05,Pasta,25
+2026-04-05,Chicken Fry,53
+2026-04-06,Chicken Biriyani,73
+2026-04-06,Fried Rice,51
+2026-04-06,Burger,30
+2026-04-06,Pizza,25
+2026-04-06,Pasta,27
+2026-04-06,Chicken Fry,39
+2026-04-07,Chicken Biriyani,82
+2026-04-07,Fried Rice,56
+2026-04-07,Burger,34
+2026-04-07,Pizza,23
+2026-04-07,Pasta,23
+2026-04-07,Chicken Fry,36
+2026-04-08,Chicken Biriyani,54
+2026-04-08,Fried Rice,48
+2026-04-08,Burger,28
+2026-04-08,Pizza,26
+2026-04-08,Pasta,23
+2026-04-08,Chicken Fry,40
+2026-04-09,Chicken Biriyani,75
+2026-04-09,Fried Rice,50
+2026-04-09,Burger,45
+2026-04-09,Pizza,32
+2026-04-09,Pasta,29
+2026-04-09,Chicken Fry,56
+2026-04-10,Chicken Biriyani,107
+2026-04-10,Fried Rice,48
+2026-04-10,Burger,49
+2026-04-10,Pizza,55
+2026-04-10,Pasta,30
+2026-04-10,Chicken Fry,44
+2026-04-11,Chicken Biriyani,119
+2026-04-11,Fried Rice,77
+2026-04-11,Burger,80
+2026-04-11,Pizza,75
+2026-04-11,Pasta,29
+2026-04-11,Chicken Fry,53
+2026-04-12,Chicken Biriyani,99
+2026-04-12,Fried Rice,59
+2026-04-12,Burger,65
+2026-04-12,Pizza,47
+2026-04-12,Pasta,29
+2026-04-12,Chicken Fry,56
+2026-04-13,Chicken Biriyani,84
+2026-04-13,Fried Rice,55
+2026-04-13,Burger,51
+2026-04-13,Pizza,26
+2026-04-13,Pasta,24
+2026-04-13,Chicken Fry,39
+2026-04-14,Chicken Biriyani,77
+2026-04-14,Fried Rice,60
+2026-04-14,Burger,41
+2026-04-14,Pizza,37
+2026-04-14,Pasta,42
+2026-04-14,Chicken Fry,44
+2026-04-15,Chicken Biriyani,65
+2026-04-15,Fried Rice,49
+2026-04-15,Burger,53
+2026-04-15,Pizza,24
+2026-04-15,Pasta,25
+2026-04-15,Chicken Fry,39
+2026-04-16,Chicken Biriyani,84
+2026-04-16,Fried Rice,52
+2026-04-16,Burger,49
+2026-04-16,Pizza,34
+2026-04-16,Pasta,28
+2026-04-16,Chicken Fry,48
+2026-04-17,Chicken Biriyani,86
+2026-04-17,Fried Rice,56
+2026-04-17,Burger,56
+2026-04-17,Pizza,45
+2026-04-17,Pasta,36
+2026-04-17,Chicken Fry,36
+2026-04-18,Chicken Biriyani,102
+2026-04-18,Fried Rice,50
+2026-04-18,Burger,69
+2026-04-18,Pizza,53
+2026-04-18,Pasta,41
+2026-04-18,Chicken Fry,53
+2026-04-19,Chicken Biriyani,90
+2026-04-19,Fried Rice,59
+2026-04-19,Burger,50
+2026-04-19,Pizza,46
+2026-04-19,Pasta,33
+2026-04-19,Chicken Fry,47
+2026-04-20,Chicken Biriyani,71
+2026-04-20,Fried Rice,50
+2026-04-20,Burger,33
+2026-04-20,Pizza,29
+2026-04-20,Pasta,31
+2026-04-20,Chicken Fry,36
+2026-04-21,Chicken Biriyani,74
+2026-04-21,Fried Rice,50
+2026-04-21,Burger,29
+2026-04-21,Pizza,16
+2026-04-21,Pasta,22
+2026-04-21,Chicken Fry,41
+2026-04-22,Chicken Biriyani,74
+2026-04-22,Fried Rice,62
+2026-04-22,Burger,39
+2026-04-22,Pizza,27
+2026-04-22,Pasta,23
+2026-04-22,Chicken Fry,35
+2026-04-23,Chicken Biriyani,80
+2026-04-23,Fried Rice,57
+2026-04-23,Burger,49
+2026-04-23,Pizza,27
+2026-04-23,Pasta,33
+2026-04-23,Chicken Fry,45
+2026-04-24,Chicken Biriyani,95
+2026-04-24,Fried Rice,72
+2026-04-24,Burger,50
+2026-04-24,Pizza,46
+2026-04-24,Pasta,31
+2026-04-24,Chicken Fry,52
+2026-04-25,Chicken Biriyani,117
+2026-04-25,Fried Rice,54
+2026-04-25,Burger,53
+2026-04-25,Pizza,53
+2026-04-25,Pasta,42
+2026-04-25,Chicken Fry,49
+2026-04-26,Chicken Biriyani,111
+2026-04-26,Fried Rice,55
+2026-04-26,Burger,64
+2026-04-26,Pizza,48
+2026-04-26,Pasta,28
+2026-04-26,Chicken Fry,51
+2026-04-27,Chicken Biriyani,67
+2026-04-27,Fried Rice,63
+2026-04-27,Burger,43
+2026-04-27,Pizza,29
+2026-04-27,Pasta,31
+2026-04-27,Chicken Fry,40
+2026-04-28,Chicken Biriyani,62
+2026-04-28,Fried Rice,37
+2026-04-28,Burger,30
+2026-04-28,Pizza,25
+2026-04-28,Pasta,42
+2026-04-28,Chicken Fry,33
+2026-04-29,Chicken Biriyani,76
+2026-04-29,Fried Rice,52
+2026-04-29,Burger,38
+2026-04-29,Pizza,27
+2026-04-29,Pasta,16
+2026-04-29,Chicken Fry,44
+2026-04-30,Chicken Biriyani,96
+2026-04-30,Fried Rice,70
+2026-04-30,Burger,57
+2026-04-30,Pizza,26
+2026-04-30,Pasta,31
+2026-04-30,Chicken Fry,42
+2026-05-01,Chicken Biriyani,155
+2026-05-01,Fried Rice,71
+2026-05-01,Burger,83
+2026-05-01,Pizza,72
+2026-05-01,Pasta,45
+2026-05-01,Chicken Fry,85
+2026-05-02,Chicken Biriyani,134
+2026-05-02,Fried Rice,67
+2026-05-02,Burger,89
+2026-05-02,Pizza,46
+2026-05-02,Pasta,26
+2026-05-02,Chicken Fry,64
+2026-05-03,Chicken Biriyani,109
+2026-05-03,Fried Rice,65
+2026-05-03,Burger,68
+2026-05-03,Pizza,55
+2026-05-03,Pasta,43
+2026-05-03,Chicken Fry,45
+2026-05-04,Chicken Biriyani,65
+2026-05-04,Fried Rice,58
+2026-05-04,Burger,39
+2026-05-04,Pizza,17
+2026-05-04,Pasta,35
+2026-05-04,Chicken Fry,38
+2026-05-05,Chicken Biriyani,67
+2026-05-05,Fried Rice,35
+2026-05-05,Burger,44
+2026-05-05,Pizza,30
+2026-05-05,Pasta,30
+2026-05-05,Chicken Fry,40
+2026-05-06,Chicken Biriyani,78
+2026-05-06,Fried Rice,45
+2026-05-06,Burger,50
+2026-05-06,Pizza,33
+2026-05-06,Pasta,23
+2026-05-06,Chicken Fry,44
+2026-05-07,Chicken Biriyani,87
+2026-05-07,Fried Rice,50
+2026-05-07,Burger,39
+2026-05-07,Pizza,33
+2026-05-07,Pasta,35
+2026-05-07,Chicken Fry,41
+2026-05-08,Chicken Biriyani,94
+2026-05-08,Fried Rice,76
+2026-05-08,Burger,69
+2026-05-08,Pizza,62
+2026-05-08,Pasta,33
+2026-05-08,Chicken Fry,59
+2026-05-09,Chicken Biriyani,110
+2026-05-09,Fried Rice,61
+2026-05-09,Burger,74
+2026-05-09,Pizza,63
+2026-05-09,Pasta,40
+2026-05-09,Chicken Fry,69
+2026-05-10,Chicken Biriyani,109
+2026-05-10,Fried Rice,66
+2026-05-10,Burger,60
+2026-05-10,Pizza,53
+2026-05-10,Pasta,33
+2026-05-10,Chicken Fry,47
+2026-05-11,Chicken Biriyani,85
+2026-05-11,Fried Rice,44
+2026-05-11,Burger,32
+2026-05-11,Pizza,32
+2026-05-11,Pasta,31
+2026-05-11,Chicken Fry,33
+2026-05-12,Chicken Biriyani,72
+2026-05-12,Fried Rice,68
+2026-05-12,Burger,35
+2026-05-12,Pizza,30
+2026-05-12,Pasta,33
+2026-05-12,Chicken Fry,40
+2026-05-13,Chicken Biriyani,75
+2026-05-13,Fried Rice,62
+2026-05-13,Burger,48
+2026-05-13,Pizza,19
+2026-05-13,Pasta,34
+2026-05-13,Chicken Fry,42
+2026-05-14,Chicken Biriyani,102
+2026-05-14,Fried Rice,52
+2026-05-14,Burger,59
+2026-05-14,Pizza,31
+2026-05-14,Pasta,34
+2026-05-14,Chicken Fry,35
+2026-05-15,Chicken Biriyani,109
+2026-05-15,Fried Rice,74
+2026-05-15,Burger,49
+2026-05-15,Pizza,60
+2026-05-15,Pasta,27
+2026-05-15,Chicken Fry,57
+2026-05-16,Chicken Biriyani,93
+2026-05-16,Fried Rice,69
+2026-05-16,Burger,79
+2026-05-16,Pizza,50
+2026-05-16,Pasta,40
+2026-05-16,Chicken Fry,52
+2026-05-17,Chicken Biriyani,101
+2026-05-17,Fried Rice,82
+2026-05-17,Burger,83
+2026-05-17,Pizza,60
+2026-05-17,Pasta,28
+2026-05-17,Chicken Fry,50
+2026-05-18,Chicken Biriyani,62
+2026-05-18,Fried Rice,62
+2026-05-18,Burger,40
+2026-05-18,Pizza,23
+2026-05-18,Pasta,25
+2026-05-18,Chicken Fry,39
+2026-05-19,Chicken Biriyani,84
+2026-05-19,Fried Rice,69
+2026-05-19,Burger,32
+2026-05-19,Pizza,27
+2026-05-19,Pasta,17
+2026-05-19,Chicken Fry,39
+2026-05-20,Chicken Biriyani,76
+2026-05-20,Fried Rice,45
+2026-05-20,Burger,41
+2026-05-20,Pizza,26
+2026-05-20,Pasta,37
+2026-05-20,Chicken Fry,43
+2026-05-21,Chicken Biriyani,118
+2026-05-21,Fried Rice,44
+2026-05-21,Burger,61
+2026-05-21,Pizza,33
+2026-05-21,Pasta,33
+2026-05-21,Chicken Fry,50
+2026-05-22,Chicken Biriyani,85
+2026-05-22,Fried Rice,45
+2026-05-22,Burger,55
+2026-05-22,Pizza,46
+2026-05-22,Pasta,30
+2026-05-22,Chicken Fry,56
+2026-05-23,Chicken Biriyani,146
+2026-05-23,Fried Rice,65
+2026-05-23,Burger,74
+2026-05-23,Pizza,80
+2026-05-23,Pasta,32
+2026-05-23,Chicken Fry,64
+2026-05-24,Chicken Biriyani,118
+2026-05-24,Fried Rice,55
+2026-05-24,Burger,90
+2026-05-24,Pizza,42
+2026-05-24,Pasta,30
+2026-05-24,Chicken Fry,66
+2026-05-25,Chicken Biriyani,62
+2026-05-25,Fried Rice,53
+2026-05-25,Burger,27
+2026-05-25,Pizza,33
+2026-05-25,Pasta,26
+2026-05-25,Chicken Fry,51
+2026-05-26,Chicken Biriyani,64
+2026-05-26,Fried Rice,65
+2026-05-26,Burger,33
+2026-05-26,Pizza,29
+2026-05-26,Pasta,19
+2026-05-26,Chicken Fry,38
+2026-05-27,Chicken Biriyani,63
+2026-05-27,Fried Rice,60
+2026-05-27,Burger,35
+2026-05-27,Pizza,24
+2026-05-27,Pasta,32
+2026-05-27,Chicken Fry,34
+2026-05-28,Chicken Biriyani,87
+2026-05-28,Fried Rice,54
+2026-05-28,Burger,39
+2026-05-28,Pizza,37
+2026-05-28,Pasta,33
+2026-05-28,Chicken Fry,46
+2026-05-29,Chicken Biriyani,87
+2026-05-29,Fried Rice,64
+2026-05-29,Burger,61
+2026-05-29,Pizza,45
+2026-05-29,Pasta,40
+2026-05-29,Chicken Fry,62
+2026-05-30,Chicken Biriyani,105
+2026-05-30,Fried Rice,54
+2026-05-30,Burger,66
+2026-05-30,Pizza,43
+2026-05-30,Pasta,43
+2026-05-30,Chicken Fry,53
+2026-05-31,Chicken Biriyani,133
+2026-05-31,Fried Rice,57
+2026-05-31,Burger,86
+2026-05-31,Pizza,78
+2026-05-31,Pasta,36
+2026-05-31,Chicken Fry,46
+2026-06-01,Chicken Biriyani,85
+2026-06-01,Fried Rice,51
+2026-06-01,Burger,45
+2026-06-01,Pizza,27
+2026-06-01,Pasta,32
+2026-06-01,Chicken Fry,40
+2026-06-02,Chicken Biriyani,74
+2026-06-02,Fried Rice,50
+2026-06-02,Burger,33
+2026-06-02,Pizza,18
+2026-06-02,Pasta,26
+2026-06-02,Chicken Fry,34
+2026-06-03,Chicken Biriyani,84
+2026-06-03,Fried Rice,51
+2026-06-03,Burger,49
+2026-06-03,Pizza,31
+2026-06-03,Pasta,30
+2026-06-03,Chicken Fry,45
+2026-06-04,Chicken Biriyani,99
+2026-06-04,Fried Rice,65
+2026-06-04,Burger,47
+2026-06-04,Pizza,34
+2026-06-04,Pasta,30
+2026-06-04,Chicken Fry,46
+2026-06-05,Chicken Biriyani,113
+2026-06-05,Fried Rice,78
+2026-06-05,Burger,55
+2026-06-05,Pizza,45
+2026-06-05,Pasta,26
+2026-06-05,Chicken Fry,63
+2026-06-06,Chicken Biriyani,123
+2026-06-06,Fried Rice,58
+2026-06-06,Burger,103
+2026-06-06,Pizza,59
+2026-06-06,Pasta,47
+2026-06-06,Chicken Fry,80
+2026-06-07,Chicken Biriyani,145
+2026-06-07,Fried Rice,75
+2026-06-07,Burger,65
+2026-06-07,Pizza,64
+2026-06-07,Pasta,32
+2026-06-07,Chicken Fry,41
+2026-06-08,Chicken Biriyani,84
+2026-06-08,Fried Rice,63
+2026-06-08,Burger,39
+2026-06-08,Pizza,26
+2026-06-08,Pasta,34
+2026-06-08,Chicken Fry,42
+2026-06-09,Chicken Biriyani,83
+2026-06-09,Fried Rice,33
+2026-06-09,Burger,48
+2026-06-09,Pizza,22
+2026-06-09,Pasta,22
+2026-06-09,Chicken Fry,36
+2026-06-10,Chicken Biriyani,88
+2026-06-10,Fried Rice,67
+2026-06-10,Burger,45
+2026-06-10,Pizza,32
+2026-06-10,Pasta,32
+2026-06-10,Chicken Fry,52
+2026-06-11,Chicken Biriyani,86
+2026-06-11,Fried Rice,84
+2026-06-11,Burger,39
+2026-06-11,Pizza,39
+2026-06-11,Pasta,39
+2026-06-11,Chicken Fry,43
+2026-06-12,Chicken Biriyani,132
+2026-06-12,Fried Rice,66
+2026-06-12,Burger,61
+2026-06-12,Pizza,50
+2026-06-12,Pasta,29
+2026-06-12,Chicken Fry,57
+2026-06-13,Chicken Biriyani,132
+2026-06-13,Fried Rice,87
+2026-06-13,Burger,84
+2026-06-13,Pizza,48
+2026-06-13,Pasta,33
+2026-06-13,Chicken Fry,39
+2026-06-14,Chicken Biriyani,111
+2026-06-14,Fried Rice,87
+2026-06-14,Burger,59
+2026-06-14,Pizza,69
+2026-06-14,Pasta,35
+2026-06-14,Chicken Fry,56
+2026-06-15,Chicken Biriyani,64
+2026-06-15,Fried Rice,55
+2026-06-15,Burger,45
+2026-06-15,Pizza,38
+2026-06-15,Pasta,36
+2026-06-15,Chicken Fry,42
+2026-06-16,Chicken Biriyani,59
+2026-06-16,Fried Rice,49
+2026-06-16,Burger,43
+2026-06-16,Pizza,27
+2026-06-16,Pasta,24
+2026-06-16,Chicken Fry,46
+2026-06-17,Chicken Biriyani,81
+2026-06-17,Fried Rice,55
+2026-06-17,Burger,45
+2026-06-17,Pizza,26
+2026-06-17,Pasta,35
+2026-06-17,Chicken Fry,42
+2026-06-18,Chicken Biriyani,89
+2026-06-18,Fried Rice,68
+2026-06-18,Burger,45
+2026-06-18,Pizza,29
+2026-06-18,Pasta,33
+2026-06-18,Chicken Fry,46
+2026-06-19,Chicken Biriyani,99
+2026-06-19,Fried Rice,68
+2026-06-19,Burger,62
+2026-06-19,Pizza,46
+2026-06-19,Pasta,37
+2026-06-19,Chicken Fry,52
+2026-06-20,Chicken Biriyani,114
+2026-06-20,Fried Rice,74
+2026-06-20,Burger,85
+2026-06-20,Pizza,66
+2026-06-20,Pasta,43
+2026-06-20,Chicken Fry,66
+2026-06-21,Chicken Biriyani,119
+2026-06-21,Fried Rice,52
+2026-06-21,Burger,69
+2026-06-21,Pizza,50
+2026-06-21,Pasta,38
+2026-06-21,Chicken Fry,61
+2026-06-22,Chicken Biriyani,57
+2026-06-22,Fried Rice,65
+2026-06-22,Burger,46
+2026-06-22,Pizza,36
+2026-06-22,Pasta,31
+2026-06-22,Chicken Fry,23
+2026-06-23,Chicken Biriyani,66
+2026-06-23,Fried Rice,60
+2026-06-23,Burger,35
+2026-06-23,Pizza,33
+2026-06-23,Pasta,20
+2026-06-23,Chicken Fry,35
+2026-06-24,Chicken Biriyani,83
+2026-06-24,Fried Rice,62
+2026-06-24,Burger,56
+2026-06-24,Pizza,23
+2026-06-24,Pasta,34
+2026-06-24,Chicken Fry,44
+2026-06-25,Chicken Biriyani,85
+2026-06-25,Fried Rice,62
+2026-06-25,Burger,57
+2026-06-25,Pizza,43
+2026-06-25,Pasta,41
+2026-06-25,Chicken Fry,63
+2026-06-26,Chicken Biriyani,123
+2026-06-26,Fried Rice,85
+2026-06-26,Burger,70
+2026-06-26,Pizza,54
+2026-06-26,Pasta,34
+2026-06-26,Chicken Fry,65
+2026-06-27,Chicken Biriyani,103
+2026-06-27,Fried Rice,79
+2026-06-27,Burger,84
+2026-06-27,Pizza,54
+2026-06-27,Pasta,32
+2026-06-27,Chicken Fry,52
+2026-06-28,Chicken Biriyani,129
+2026-06-28,Fried Rice,63
+2026-06-28,Burger,77
+2026-06-28,Pizza,60
+2026-06-28,Pasta,32
+2026-06-28,Chicken Fry,45
+2026-06-29,Chicken Biriyani,76
+2026-06-29,Fried Rice,70
+2026-06-29,Burger,32
+2026-06-29,Pizza,20
+2026-06-29,Pasta,26
+2026-06-29,Chicken Fry,34
+2026-06-30,Chicken Biriyani,61
+2026-06-30,Fried Rice,60
+2026-06-30,Burger,41
+2026-06-30,Pizza,29
+2026-06-30,Pasta,25
+2026-06-30,Chicken Fry,42
+2026-07-01,Chicken Biriyani,67
+2026-07-01,Fried Rice,41
+2026-07-01,Burger,33
+2026-07-01,Pizza,39
+2026-07-01,Pasta,37
+2026-07-01,Chicken Fry,27
+2026-07-02,Chicken Biriyani,82
+2026-07-02,Fried Rice,58
+2026-07-02,Burger,52
+2026-07-02,Pizza,44
+2026-07-02,Pasta,25
+2026-07-02,Chicken Fry,43
+2026-07-03,Chicken Biriyani,88
+2026-07-03,Fried Rice,59
+2026-07-03,Burger,79
+2026-07-03,Pizza,43
+2026-07-03,Pasta,41
+2026-07-03,Chicken Fry,57
+2026-07-04,Chicken Biriyani,144
+2026-07-04,Fried Rice,61
+2026-07-04,Burger,86
+2026-07-04,Pizza,68
+2026-07-04,Pasta,43
+2026-07-04,Chicken Fry,79
+2026-07-05,Chicken Biriyani,113
+2026-07-05,Fried Rice,71
+2026-07-05,Burger,84
+2026-07-05,Pizza,62
+2026-07-05,Pasta,28
+2026-07-05,Chicken Fry,42
+2026-07-06,Chicken Biriyani,87
+2026-07-06,Fried Rice,54
+2026-07-06,Burger,42
+2026-07-06,Pizza,29
+2026-07-06,Pasta,22
+2026-07-06,Chicken Fry,33
+2026-07-07,Chicken Biriyani,76
+2026-07-07,Fried Rice,52
+2026-07-07,Burger,45
+2026-07-07,Pizza,39
+2026-07-07,Pasta,26
+2026-07-07,Chicken Fry,31
+2026-07-08,Chicken Biriyani,95
+2026-07-08,Fried Rice,54
+2026-07-08,Burger,33
+2026-07-08,Pizza,26
+2026-07-08,Pasta,32
+2026-07-08,Chicken Fry,45
+2026-07-09,Chicken Biriyani,66
+2026-07-09,Fried Rice,62
+2026-07-09,Burger,48
+2026-07-09,Pizza,28
+2026-07-09,Pasta,34
+2026-07-09,Chicken Fry,38
+2026-07-10,Chicken Biriyani,116
+2026-07-10,Fried Rice,61
+2026-07-10,Burger,60
+2026-07-10,Pizza,55
+2026-07-10,Pasta,33
+2026-07-10,Chicken Fry,44
+2026-07-11,Chicken Biriyani,100
+2026-07-11,Fried Rice,60
+2026-07-11,Burger,74
+2026-07-11,Pizza,66
+2026-07-11,Pasta,37
+2026-07-11,Chicken Fry,49
+2026-07-12,Chicken Biriyani,134
+2026-07-12,Fried Rice,48
+2026-07-12,Burger,74
+2026-07-12,Pizza,59
+2026-07-12,Pasta,51
+2026-07-12,Chicken Fry,58
+2026-07-13,Chicken Biriyani,103
+2026-07-13,Fried Rice,41
+2026-07-13,Burger,32
+2026-07-13,Pizza,35
+2026-07-13,Pasta,22
+2026-07-13,Chicken Fry,30
+2026-07-14,Chicken Biriyani,83
+2026-07-14,Fried Rice,48
+2026-07-14,Burger,32
+2026-07-14,Pizza,27
+2026-07-14,Pasta,34
+2026-07-14,Chicken Fry,30
+2026-07-15,Chicken Biriyani,93
+2026-07-15,Fried Rice,70
+2026-07-15,Burger,40
+2026-07-15,Pizza,24
+2026-07-15,Pasta,32
+2026-07-15,Chicken Fry,35
+2026-07-16,Chicken Biriyani,78
+2026-07-16,Fried Rice,52
+2026-07-16,Burger,56
+2026-07-16,Pizza,33
+2026-07-16,Pasta,37
+2026-07-16,Chicken Fry,52
+2026-07-17,Chicken Biriyani,110
+2026-07-17,Fried Rice,63
+2026-07-17,Burger,44
+2026-07-17,Pizza,64
+2026-07-17,Pasta,25
+2026-07-17,Chicken Fry,50
+2026-07-18,Chicken Biriyani,139
+2026-07-18,Fried Rice,79
+2026-07-18,Burger,95
+2026-07-18,Pizza,63
+2026-07-18,Pasta,44
+2026-07-18,Chicken Fry,64
+2026-07-19,Chicken Biriyani,148
+2026-07-19,Fried Rice,59
+2026-07-19,Burger,85
+2026-07-19,Pizza,37
+2026-07-19,Pasta,39
+2026-07-19,Chicken Fry,52
+2026-07-20,Chicken Biriyani,74
+2026-07-20,Fried Rice,58
+2026-07-20,Burger,37
+2026-07-20,Pizza,20
+2026-07-20,Pasta,32
+2026-07-20,Chicken Fry,38
+2026-07-21,Chicken Biriyani,69
+2026-07-21,Fried Rice,43
+2026-07-21,Burger,45
+2026-07-21,Pizza,29
+2026-07-21,Pasta,28
+2026-07-21,Chicken Fry,54
+2026-07-22,Chicken Biriyani,93
+2026-07-22,Fried Rice,60
+2026-07-22,Burger,44
+2026-07-22,Pizza,44
+2026-07-22,Pasta,26
+2026-07-22,Chicken Fry,35
+2026-07-23,Chicken Biriyani,102
+2026-07-23,Fried Rice,58
+2026-07-23,Burger,57
+2026-07-23,Pizza,29
+2026-07-23,Pasta,43
+2026-07-23,Chicken Fry,51
+2026-07-24,Chicken Biriyani,106
+2026-07-24,Fried Rice,69
+2026-07-24,Burger,69
+2026-07-24,Pizza,40
+2026-07-24,Pasta,28
+2026-07-24,Chicken Fry,62
+2026-07-25,Chicken Biriyani,142
+2026-07-25,Fried Rice,70
+2026-07-25,Burger,87
+2026-07-25,Pizza,69
+2026-07-25,Pasta,35
+2026-07-25,Chicken Fry,60
+2026-07-26,Chicken Biriyani,123
+2026-07-26,Fried Rice,53
+2026-07-26,Burger,80
+2026-07-26,Pizza,57
+2026-07-26,Pasta,34
+2026-07-26,Chicken Fry,50
+2026-07-27,Chicken Biriyani,62
+2026-07-27,Fried Rice,44
+2026-07-27,Burger,53
+2026-07-27,Pizza,53
+2026-07-27,Pasta,23
+2026-07-27,Chicken Fry,39
+2026-07-28,Chicken Biriyani,76
+2026-07-28,Fried Rice,57
+2026-07-28,Burger,43
+2026-07-28,Pizza,21
+2026-07-28,Pasta,28
+2026-07-28,Chicken Fry,32
+2026-07-29,Chicken Biriyani,75
+2026-07-29,Fried Rice,54
+2026-07-29,Burger,36
+2026-07-29,Pizza,25
+2026-07-29,Pasta,30
+2026-07-29,Chicken Fry,41
+2026-07-30,Chicken Biriyani,80
+2026-07-30,Fried Rice,57
+2026-07-30,Burger,42
+2026-07-30,Pizza,40
+2026-07-30,Pasta,35
+2026-07-30,Chicken Fry,56
+2026-07-31,Chicken Biriyani,102
+2026-07-31,Fried Rice,60
+2026-07-31,Burger,64
+2026-07-31,Pizza,54
+2026-07-31,Pasta,35
+2026-07-31,Chicken Fry,61
+2026-08-01,Chicken Biriyani,134
+2026-08-01,Fried Rice,75
+2026-08-01,Burger,77
+2026-08-01,Pizza,76
+2026-08-01,Pasta,32
+2026-08-01,Chicken Fry,64
+2026-08-02,Chicken Biriyani,114
+2026-08-02,Fried Rice,69
+2026-08-02,Burger,59
+2026-08-02,Pizza,63
+2026-08-02,Pasta,31
+2026-08-02,Chicken Fry,49
+2026-08-03,Chicken Biriyani,81
+2026-08-03,Fried Rice,56
+2026-08-03,Burger,45
+2026-08-03,Pizza,35
+2026-08-03,Pasta,36
+2026-08-03,Chicken Fry,51
+2026-08-04,Chicken Biriyani,96
+2026-08-04,Fried Rice,53
+2026-08-04,Burger,40
+2026-08-04,Pizza,39
+2026-08-04,Pasta,26
+2026-08-04,Chicken Fry,44
+2026-08-05,Chicken Biriyani,85
+2026-08-05,Fried Rice,61
+2026-08-05,Burger,34
+2026-08-05,Pizza,27
+2026-08-05,Pasta,32
+2026-08-05,Chicken Fry,35
+2026-08-06,Chicken Biriyani,76
+2026-08-06,Fried Rice,51
+2026-08-06,Burger,48
+2026-08-06,Pizza,26
+2026-08-06,Pasta,24
+2026-08-06,Chicken Fry,40
+2026-08-07,Chicken Biriyani,90
+2026-08-07,Fried Rice,71
+2026-08-07,Burger,72
+2026-08-07,Pizza,63
+2026-08-07,Pasta,37
+2026-08-07,Chicken Fry,51
+2026-08-08,Chicken Biriyani,96
+2026-08-08,Fried Rice,65
+2026-08-08,Burger,62
+2026-08-08,Pizza,56
+2026-08-08,Pasta,29
+2026-08-08,Chicken Fry,61
+2026-08-09,Chicken Biriyani,114
+2026-08-09,Fried Rice,67
+2026-08-09,Burger,80
+2026-08-09,Pizza,50
+2026-08-09,Pasta,31
+2026-08-09,Chicken Fry,50
+2026-08-10,Chicken Biriyani,86
+2026-08-10,Fried Rice,55
+2026-08-10,Burger,60
+2026-08-10,Pizza,29
+2026-08-10,Pasta,27
+2026-08-10,Chicken Fry,47
+2026-08-11,Chicken Biriyani,80
+2026-08-11,Fried Rice,41
+2026-08-11,Burger,33
+2026-08-11,Pizza,27
+2026-08-11,Pasta,21
+2026-08-11,Chicken Fry,41
+2026-08-12,Chicken Biriyani,72
+2026-08-12,Fried Rice,63
+2026-08-12,Burger,46
+2026-08-12,Pizza,35
+2026-08-12,Pasta,29
+2026-08-12,Chicken Fry,60
+2026-08-13,Chicken Biriyani,62
+2026-08-13,Fried Rice,58
+2026-08-13,Burger,46
+2026-08-13,Pizza,41
+2026-08-13,Pasta,31
+2026-08-13,Chicken Fry,44
+2026-08-14,Chicken Biriyani,114
+2026-08-14,Fried Rice,72
+2026-08-14,Burger,54
+2026-08-14,Pizza,58
+2026-08-14,Pasta,40
+2026-08-14,Chicken Fry,68
+2026-08-15,Chicken Biriyani,151
+2026-08-15,Fried Rice,94
+2026-08-15,Burger,119
+2026-08-15,Pizza,71
+2026-08-15,Pasta,40
+2026-08-15,Chicken Fry,85
+2026-08-16,Chicken Biriyani,130
+2026-08-16,Fried Rice,63
+2026-08-16,Burger,72
+2026-08-16,Pizza,64
+2026-08-16,Pasta,29
+2026-08-16,Chicken Fry,62
+2026-08-17,Chicken Biriyani,78
+2026-08-17,Fried Rice,38
+2026-08-17,Burger,44
+2026-08-17,Pizza,26
+2026-08-17,Pasta,18
+2026-08-17,Chicken Fry,33
+2026-08-18,Chicken Biriyani,58
+2026-08-18,Fried Rice,47
+2026-08-18,Burger,42
+2026-08-18,Pizza,27
+2026-08-18,Pasta,43
+2026-08-18,Chicken Fry,40
+2026-08-19,Chicken Biriyani,91
+2026-08-19,Fried Rice,49
+2026-08-19,Burger,48
+2026-08-19,Pizza,33
+2026-08-19,Pasta,33
+2026-08-19,Chicken Fry,40
+2026-08-20,Chicken Biriyani,104
+2026-08-20,Fried Rice,41
+2026-08-20,Burger,51
+2026-08-20,Pizza,37
+2026-08-20,Pasta,31
+2026-08-20,Chicken Fry,44
+2026-08-21,Chicken Biriyani,102
+2026-08-21,Fried Rice,52
+2026-08-21,Burger,70
+2026-08-21,Pizza,49
+2026-08-21,Pasta,31
+2026-08-21,Chicken Fry,53
+2026-08-22,Chicken Biriyani,124
+2026-08-22,Fried Rice,51
+2026-08-22,Burger,76
+2026-08-22,Pizza,51
+2026-08-22,Pasta,41
+2026-08-22,Chicken Fry,67
+2026-08-23,Chicken Biriyani,117
+2026-08-23,Fried Rice,57
+2026-08-23,Burger,71
+2026-08-23,Pizza,62
+2026-08-23,Pasta,25
+2026-08-23,Chicken Fry,61
+2026-08-24,Chicken Biriyani,79
+2026-08-24,Fried Rice,60
+2026-08-24,Burger,44
+2026-08-24,Pizza,32
+2026-08-24,Pasta,24
+2026-08-24,Chicken Fry,30
+2026-08-25,Chicken Biriyani,83
+2026-08-25,Fried Rice,66
+2026-08-25,Burger,57
+2026-08-25,Pizza,42
+2026-08-25,Pasta,28
+2026-08-25,Chicken Fry,36
+2026-08-26,Chicken Biriyani,100
+2026-08-26,Fried Rice,89
+2026-08-26,Burger,58
+2026-08-26,Pizza,33
+2026-08-26,Pasta,35
+2026-08-26,Chicken Fry,54
+2026-08-27,Chicken Biriyani,103
+2026-08-27,Fried Rice,60
+2026-08-27,Burger,46
+2026-08-27,Pizza,40
+2026-08-27,Pasta,29
+2026-08-27,Chicken Fry,55
+2026-08-28,Chicken Biriyani,102
+2026-08-28,Fried Rice,65
+2026-08-28,Burger,79
+2026-08-28,Pizza,55
+2026-08-28,Pasta,20
+2026-08-28,Chicken Fry,55
+2026-08-29,Chicken Biriyani,111
+2026-08-29,Fried Rice,74
+2026-08-29,Burger,60
+2026-08-29,Pizza,59
+2026-08-29,Pasta,32
+2026-08-29,Chicken Fry,61
+2026-08-30,Chicken Biriyani,101
+2026-08-30,Fried Rice,52
+2026-08-30,Burger,66
+2026-08-30,Pizza,62
+2026-08-30,Pasta,36
+2026-08-30,Chicken Fry,46
+2026-08-31,Chicken Biriyani,70
+2026-08-31,Fried Rice,57
+2026-08-31,Burger,40
+2026-08-31,Pizza,27
+2026-08-31,Pasta,34
+2026-08-31,Chicken Fry,36

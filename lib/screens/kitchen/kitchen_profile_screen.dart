@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:caferio/screens/login_screen.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:caferio/utils/theme.dart';
+import 'package:caferio/services/auth_service.dart';
 
 class KitchenProfileScreen extends StatelessWidget {
   const KitchenProfileScreen({super.key});
@@ -39,7 +38,7 @@ class KitchenProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  Supabase.instance.client.auth.currentUser?.email ?? 'chef@gmail.com',
+                  AuthService().currentUser?.email ?? 'chef@caferio.com',
                   style: const TextStyle(fontSize: 16, color: AppTheme.textLight),
                 ),
                 const SizedBox(height: 48),
@@ -47,9 +46,7 @@ class KitchenProfileScreen extends StatelessWidget {
                 SizedBox(
                   width: 200,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      await Supabase.instance.client.auth.signOut();
-                    },
+                    onPressed: () => AuthService().signOut(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.red,

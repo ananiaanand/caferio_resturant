@@ -1,0 +1,158 @@
+{
+  "metrics": {
+    "Cheese": {
+      "mae": 956.0,
+      "rmse": 1142.9,
+      "r2": 0.746,
+      "mape_pct": 12.8,
+      "baseline_mae_lag7": 1242.2,
+      "best_params": {
+        "max_depth": 10,
+        "max_features": 0.6,
+        "min_samples_leaf": 3
+      }
+    },
+    "Chicken": {
+      "mae": 4221.0,
+      "rmse": 5376.6,
+      "r2": 0.703,
+      "mape_pct": 9.9,
+      "baseline_mae_lag7": 5258.3,
+      "best_params": {
+        "max_depth": null,
+        "max_features": 0.6,
+        "min_samples_leaf": 3
+      }
+    },
+    "Egg": {
+      "mae": 421.3,
+      "rmse": 555.9,
+      "r2": 0.083,
+      "mape_pct": 14.3,
+      "baseline_mae_lag7": 592.7,
+      "best_params": {
+        "max_depth": null,
+        "max_features": 0.6,
+        "min_samples_leaf": 3
+      }
+    },
+    "Flour": {
+      "mae": 1912.0,
+      "rmse": 2397.2,
+      "r2": 0.796,
+      "mape_pct": 9.8,
+      "baseline_mae_lag7": 2530.7,
+      "best_params": {
+        "max_depth": null,
+        "max_features": 0.6,
+        "min_samples_leaf": 1
+      }
+    },
+    "Oil": {
+      "mae": 1262.3,
+      "rmse": 1585.9,
+      "r2": 0.605,
+      "mape_pct": 10.3,
+      "baseline_mae_lag7": 1610.5,
+      "best_params": {
+        "max_depth": null,
+        "max_features": 0.6,
+        "min_samples_leaf": 3
+      }
+    },
+    "Rice": {
+      "mae": 3934.9,
+      "rmse": 5022.4,
+      "r2": 0.558,
+      "mape_pct": 10.3,
+      "baseline_mae_lag7": 5247.2,
+      "best_params": {
+        "max_depth": null,
+        "max_features": 0.6,
+        "min_samples_leaf": 3
+      }
+    },
+    "Spices": {
+      "mae": 407.6,
+      "rmse": 508.1,
+      "r2": 0.592,
+      "mape_pct": 10.2,
+      "baseline_mae_lag7": 496.7,
+      "best_params": {
+        "max_depth": 10,
+        "max_features": 0.6,
+        "min_samples_leaf": 3
+      }
+    },
+    "Vegetables": {
+      "mae": 1587.5,
+      "rmse": 2243.4,
+      "r2": 0.717,
+      "mape_pct": 7.3,
+      "baseline_mae_lag7": 2060.0,
+      "best_params": {
+        "max_depth": null,
+        "max_features": 0.6,
+        "min_samples_leaf": 3
+      }
+    }
+  },
+  "backtest": {
+    "Cheese": {
+      "cases": 27,
+      "stockout_mae_days": 0.23,
+      "within_1_day_pct": 100.0,
+      "interval_coverage_pct": 77.8,
+      "next7d_total_mape_pct": 4.0
+    },
+    "Chicken": {
+      "cases": 27,
+      "stockout_mae_days": 0.21,
+      "within_1_day_pct": 100.0,
+      "interval_coverage_pct": 70.4,
+      "next7d_total_mape_pct": 4.5
+    },
+    "Egg": {
+      "cases": 27,
+      "stockout_mae_days": 0.29,
+      "within_1_day_pct": 96.3,
+      "interval_coverage_pct": 81.5,
+      "next7d_total_mape_pct": 5.3
+    },
+    "Flour": {
+      "cases": 27,
+      "stockout_mae_days": 0.2,
+      "within_1_day_pct": 100.0,
+      "interval_coverage_pct": 81.5,
+      "next7d_total_mape_pct": 3.0
+    },
+    "Oil": {
+      "cases": 27,
+      "stockout_mae_days": 0.25,
+      "within_1_day_pct": 100.0,
+      "interval_coverage_pct": 74.1,
+      "next7d_total_mape_pct": 4.7
+    },
+    "Rice": {
+      "cases": 27,
+      "stockout_mae_days": 0.24,
+      "within_1_day_pct": 100.0,
+      "interval_coverage_pct": 81.5,
+      "next7d_total_mape_pct": 3.4
+    },
+    "Spices": {
+      "cases": 27,
+      "stockout_mae_days": 0.26,
+      "within_1_day_pct": 100.0,
+      "interval_coverage_pct": 70.4,
+      "next7d_total_mape_pct": 4.8
+    },
+    "Vegetables": {
+      "cases": 27,
+      "stockout_mae_days": 0.17,
+      "within_1_day_pct": 100.0,
+      "interval_coverage_pct": 74.1,
+      "next7d_total_mape_pct": 3.1
+    }
+  }
+}

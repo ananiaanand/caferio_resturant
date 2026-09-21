@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
-import 'package:caferio/screens/login_screen.dart';
+import 'package:caferio/services/auth_service.dart';
 import 'package:caferio/utils/theme.dart';
 import 'package:caferio/models/customer_behaviour.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -157,9 +157,7 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.logout, 
                     title: 'Log Out', 
                     color: AppTheme.textDark,
-                    onTap: () async {
-                      await Supabase.instance.client.auth.signOut();
-                    },
+                    onTap: () => AuthService().signOut(),
                   ),
                   const SizedBox(height: 12),
                   _buildProfileOption(
@@ -182,9 +180,8 @@ class ProfileScreen extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () {
                                 Navigator.pop(context);
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                                );
+                                // Sign out — AuthGate will navigate to LoginScreen.
+                                AuthService().signOut();
                               },
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                               child: const Text('Delete', style: TextStyle(color: Colors.white)),

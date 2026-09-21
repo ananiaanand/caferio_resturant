@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:caferio/utils/theme.dart';
-import 'package:caferio/screens/login_screen.dart';
+import 'package:caferio/services/auth_service.dart';
 
 class AdminProfileScreen extends StatelessWidget {
   const AdminProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = AuthService().currentUser;
     
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -44,7 +43,7 @@ class AdminProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  user?.email ?? 'admin@gmail.com',
+                  user?.email ?? 'admin@caferio.com',
                   style: const TextStyle(fontSize: 16, color: AppTheme.textLight),
                 ),
                 const SizedBox(height: 40),
@@ -53,15 +52,7 @@ class AdminProfileScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton.icon(
-                    onPressed: () async {
-                      await Supabase.instance.client.auth.signOut();
-                      if (context.mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          (route) => false,
-                        );
-                      }
-                    },
+                    onPressed: () => AuthService().signOut(),
                     icon: const Icon(Icons.logout),
                     label: const Text('Sign Out', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(

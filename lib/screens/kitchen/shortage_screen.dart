@@ -6,6 +6,40 @@ import 'package:caferio/utils/theme.dart';
 class ShortageScreen extends StatelessWidget {
   const ShortageScreen({super.key});
 
+  void _showRefillDialog(BuildContext context, dynamic item, AppProvider provider) {
+    final tc = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Refill ${item.name}'),
+        content: TextField(
+          controller: tc,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Amount to refill (e.g., kg or L)',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final amount = double.tryParse(tc.text);
+              if (amount != null && amount > 0) {
+                provider.refillItem(item.id, amount);
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Refill'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
@@ -86,11 +120,65 @@ class ShortageScreen extends StatelessWidget {
                       ...items.map((item) => Column(
                         children: [
                           ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                             title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                            subtitle: item.stockStatus != null && item.expectedRunOutDate != null
+                                ? Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: item.stockStatus == 'CRITICAL'
+                                                ? Colors.red.withValues(alpha: 0.1)
+                                                : item.stockStatus == 'WARNING'
+                                                    ? Colors.orange.withValues(alpha: 0.1)
+                                                    : Colors.green.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(
+                                              color: item.stockStatus == 'CRITICAL'
+                                                  ? Colors.red
+                                                  : item.stockStatus == 'WARNING'
+                                                      ? Colors.orange
+                                                      : Colors.green,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            item.stockStatus!,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: item.stockStatus == 'CRITICAL'
+                                                  ? Colors.red
+                                                  : item.stockStatus == 'WARNING'
+                                                      ? Colors.orange
+                                                      : Colors.green,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                          'Runs out in ${item.daysLeft} days (Expected: ${item.expectedRunOutDate!.day}/${item.expectedRunOutDate!.month}/${item.expectedRunOutDate!.year})\nStock: ${item.currentStock.toStringAsFixed(0)} ${item.lastRefilledDate != null ? '| Refilled: ${item.lastRefilledDate!.day}/${item.lastRefilledDate!.month}' : ''}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : null,
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                IconButton(
+                                  icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
+                                  tooltip: 'Refill',
+                                  onPressed: () => _showRefillDialog(context, item, provider),
+                                ),
                                 Text(
                                   item.isOutOfStock ? 'OUT OF STOCK' : 'AVAILABLE',
                                   style: TextStyle(

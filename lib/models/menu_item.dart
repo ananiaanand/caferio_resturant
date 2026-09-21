@@ -9,6 +9,7 @@ class MenuItem {
   final bool isTopPick;
   bool isFavourite;
   bool isOutOfStock;
+  final List<String> ingredients;
 
   MenuItem({
     required this.id,
@@ -21,6 +22,7 @@ class MenuItem {
     this.isTopPick = false,
     this.isFavourite = false,
     this.isOutOfStock = false,
+    this.ingredients = const [],
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class MenuItem {
       isTopPick: json['isTopPick'] as bool? ?? false,
       isFavourite: json['isFavourite'] as bool? ?? false,
       isOutOfStock: json['isOutOfStock'] as bool? ?? false,
+      ingredients: (json['ingredients'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 
@@ -50,6 +53,7 @@ class MenuItem {
       'isTopPick': isTopPick,
       'isFavourite': isFavourite,
       'isOutOfStock': isOutOfStock,
+      'ingredients': ingredients,
     };
   }
 }
