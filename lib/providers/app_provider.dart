@@ -33,7 +33,8 @@ class AppProvider with ChangeNotifier {
 
   AppProvider() {
     _initSupabase();
-    fetchMLStockoutPredictions();
+    // ML Predictions are removed from initial startup to prevent network contention.
+    // They should be fetched lazily when entering the Admin/Kitchen dashboard.
   }
 
   Future<void> fetchMLStockoutPredictions() async {
@@ -195,7 +196,8 @@ class AppProvider with ChangeNotifier {
       final data = await _supabase
           .from('orders')
           .select('*, order_items(id, menu_item_id, quantity)')
-          .order('id', ascending: false); // fallback sort if created_at missing
+          .order('id', ascending: false) // fallback sort if created_at missing
+          .limit(50);
 
       _orders.clear();
       for (final row in data) {
