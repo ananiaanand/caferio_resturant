@@ -38,7 +38,7 @@ class KitchenProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  AuthService().username ?? 'chef',
+                  AuthService().currentUser?.email ?? 'chef@caferio.com',
                   style: const TextStyle(fontSize: 16, color: AppTheme.textLight),
                 ),
                 const SizedBox(height: 48),

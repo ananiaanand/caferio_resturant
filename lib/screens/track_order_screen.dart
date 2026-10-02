@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
 import 'package:caferio/models/order.dart';
 import 'package:caferio/utils/theme.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class TrackOrderScreen extends StatelessWidget {
   const TrackOrderScreen({super.key});
@@ -10,7 +11,9 @@ class TrackOrderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final currentUser = Supabase.instance.client.auth.currentUser;
     final activeOrders = provider.orders.where((order) {
+      if (order.customerId != currentUser?.id) return false;
       if (order.status != OrderStatus.served) return true;
       if (order.servedAt == null) return true;
       return DateTime.now().difference(order.servedAt!) <= const Duration(minutes: 10);

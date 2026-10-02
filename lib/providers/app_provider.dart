@@ -11,7 +11,7 @@ import '../models/inventory_item.dart';
 import '../models/recommendation.dart';
 import '../models/customer_behaviour.dart';
 import '../services/recommendation_service.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AppProvider with ChangeNotifier {
@@ -33,8 +33,7 @@ class AppProvider with ChangeNotifier {
 
   AppProvider() {
     _initSupabase();
-    // ML Predictions are removed from initial startup to prevent network contention.
-    // They should be fetched lazily when entering the Admin/Kitchen dashboard.
+    fetchMLStockoutPredictions();
   }
 
   Future<void> fetchMLStockoutPredictions() async {
@@ -128,6 +127,18 @@ class AppProvider with ChangeNotifier {
   void _initSupabase() async {
     _fetchOrders();
     _loadRecommendations();
+    _loadCart();
+
+    _supabase.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedOut) {
+        clearUserData();
+      } else if (data.event == AuthChangeEvent.signedIn) {
+        clearUserData(); // reset previous user's data just in case
+        _fetchOrders();
+        _loadRecommendations();
+        _loadCart();
+      }
+    });
 
     if (!_isSubscribed) {
       _isSubscribed = true;
@@ -140,6 +151,62 @@ class AppProvider with ChangeNotifier {
           _fetchOrders();
         },
       ).subscribe();
+    }
+  }
+
+  void clearUserData() {
+    _cart.clear();
+    _orders.clear();
+    _customerBehaviour = null;
+    _cartRecommendations.clear();
+    _recommendedItems.clear();
+    
+    // Reset favourites to prevent leakage between users
+    for (var item in _menuItems) {
+      item.isFavourite = false;
+    }
+    
+    notifyListeners();
+  }
+
+  Future<void> _saveCart() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final key = 'cart_${user.id}';
+        final cartJson = jsonEncode(_cart.map((c) => c.toJson()).toList());
+        await prefs.setString(key, cartJson);
+      }
+    } catch (e) {
+      debugPrint('Error saving cart: $e');
+    }
+  }
+
+  Future<void> _loadCart() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final key = 'cart_${user.id}';
+        final cartString = prefs.getString(key);
+        if (cartString != null) {
+          final decoded = jsonDecode(cartString) as List;
+          _cart.clear();
+          for (final item in decoded) {
+            final cartItem = CartItem.fromJson(item as Map<String, dynamic>);
+            // Verify the item still exists in the menu catalogue
+            final menuIndex = _menuItems.indexWhere((m) => m.id == cartItem.menuItem.id);
+            if (menuIndex >= 0) {
+              _cart.add(CartItem(menuItem: _menuItems[menuIndex], quantity: cartItem.quantity));
+            }
+          }
+          notifyListeners();
+          _refreshCartRecommendations();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading cart: $e');
     }
   }
 
@@ -196,8 +263,7 @@ class AppProvider with ChangeNotifier {
       final data = await _supabase
           .from('orders')
           .select('*, order_items(id, menu_item_id, quantity)')
-          .order('id', ascending: false) // fallback sort if created_at missing
-          .limit(50);
+          .order('id', ascending: false); // fallback sort if created_at missing
 
       _orders.clear();
       for (final row in data) {
@@ -764,6 +830,7 @@ class AppProvider with ChangeNotifier {
     }
     notifyListeners();
     _refreshCartRecommendations();
+    _saveCart();
   }
 
   void removeFromCart(MenuItem item) {
@@ -776,6 +843,7 @@ class AppProvider with ChangeNotifier {
       }
       notifyListeners();
       _refreshCartRecommendations();
+      _saveCart();
     }
   }
 
@@ -856,6 +924,7 @@ class AppProvider with ChangeNotifier {
 
     _cart.clear();
     _cartRecommendations = [];
+    _saveCart();
     notifyListeners();
     return true;
   }

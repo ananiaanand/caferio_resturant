@@ -57,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    AuthService().username ?? 'johndoe',
+                    Supabase.instance.client.auth.currentUser?.email ?? 'john.doe@example.com',
                     style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],

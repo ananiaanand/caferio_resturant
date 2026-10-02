@@ -68,8 +68,8 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     } on AuthException catch (e) {
       if (mounted) {
-        // "User already registered" → translate to username-specific message.
-        final msg = e.message.contains('already registered')
+        final msg = e.message.contains('already registered') || 
+                    e.message.contains('Database error saving new user')
             ? 'That username is already taken. Choose another.'
             : e.message;
         setState(() => _error = msg);
