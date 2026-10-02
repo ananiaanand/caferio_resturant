@@ -14,6 +14,11 @@ class ProfileScreen extends StatelessWidget {
     final provider = Provider.of<AppProvider>(context);
     final favourites = provider.favouriteItems;
 
+    final user = Supabase.instance.client.auth.currentUser;
+    final userMetadata = user?.userMetadata;
+    final displayName = userMetadata?['full_name'] ?? userMetadata?['username'] ?? 'User';
+    final username = userMetadata?['username'] ?? 'user';
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: SingleChildScrollView(
@@ -52,12 +57,12 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    Supabase.instance.client.auth.currentUser?.userMetadata?['name'] ?? 'Ananya',
+                    displayName,
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 26, color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    Supabase.instance.client.auth.currentUser?.email ?? 'john.doe@example.com',
+                    '@$username',
                     style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -178,10 +183,17 @@ class ProfileScreen extends StatelessWidget {
                               child: const Text('Cancel', style: TextStyle(color: AppTheme.textLight)),
                             ),
                             ElevatedButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 Navigator.pop(context);
-                                // Sign out — AuthGate will navigate to LoginScreen.
-                                AuthService().signOut();
+                                try {
+                                  // Call Supabase RPC to delete the user account permanently
+                                  await Supabase.instance.client.rpc('delete_user');
+                                  await AuthService().signOut();
+                                } catch (e) {
+                                  debugPrint('Error deleting account: $e');
+                                  // Fallback: just sign out if the RPC fails
+                                  await AuthService().signOut();
+                                }
                               },
                               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                               child: const Text('Delete', style: TextStyle(color: Colors.white)),

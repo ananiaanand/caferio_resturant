@@ -46,14 +46,17 @@ class AuthService {
     String? fullName,
   }) {
     final normalised = username.trim().toLowerCase();
+    final finalName = (fullName != null && fullName.trim().isNotEmpty)
+        ? fullName.trim()
+        : username.trim();
+
     return _auth.signUp(
       email: _toEmail(normalised),
       password: password,
       data: {
         // Stored in raw_user_meta_data — readable by the handle_new_user trigger.
         'username': normalised,
-        if (fullName != null && fullName.trim().isNotEmpty)
-          'full_name': fullName.trim(),
+        'full_name': finalName,
       },
     );
   }

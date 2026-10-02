@@ -139,6 +139,7 @@ class AppProvider with ChangeNotifier {
     _loadRecommendations();
     _loadCart();
     _loadOrders();
+    _loadFavourites();
 
     _supabase.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedOut) {
@@ -149,6 +150,7 @@ class AppProvider with ChangeNotifier {
         _loadRecommendations();
         _loadCart();
         _loadOrders();
+        _loadFavourites();
       }
     });
 
@@ -883,7 +885,60 @@ class AppProvider with ChangeNotifier {
     final index = _menuItems.indexWhere((item) => item.id == id);
     if (index >= 0) {
       _menuItems[index].isFavourite = !_menuItems[index].isFavourite;
+      _saveFavourites();
       notifyListeners();
+    }
+  }
+
+  Future<void> _saveFavourites() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        final favIds = _menuItems.where((i) => i.isFavourite).map((i) => i.id).toList();
+        
+        // Save locally for instant offline access
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('favs_${user.id}', jsonEncode(favIds));
+        
+        // Sync permanently to Supabase database (user metadata)
+        final currentMeta = Map<String, dynamic>.from(user.userMetadata ?? {});
+        currentMeta['favourites'] = favIds;
+        await _supabase.auth.updateUser(UserAttributes(data: currentMeta));
+      }
+    } catch (e) {
+      debugPrint('Error saving favourites: $e');
+    }
+  }
+
+  Future<void> _loadFavourites() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        List<String> favIds = [];
+
+        // 1. Try pulling from permanent Supabase metadata first
+        final metaFavs = user.userMetadata?['favourites'];
+        if (metaFavs != null && metaFavs is List) {
+          favIds = metaFavs.map((e) => e.toString()).toList();
+        } else {
+          // 2. Fallback to local SharedPreferences if metadata is empty
+          final prefs = await SharedPreferences.getInstance();
+          final favString = prefs.getString('favs_${user.id}');
+          if (favString != null) {
+            favIds = List<String>.from(jsonDecode(favString));
+          }
+        }
+
+        // Apply to menu items
+        if (favIds.isNotEmpty) {
+          for (var item in _menuItems) {
+            item.isFavourite = favIds.contains(item.id);
+          }
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading favourites: $e');
     }
   }
 
