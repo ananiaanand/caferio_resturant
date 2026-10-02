@@ -22,82 +22,145 @@ class _KitchenLayoutState extends State<KitchenLayout> {
     KitchenProfileScreen(),
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: Row(
-        children: [
-          // Left Sidebar (Navigation Rail)
-          NavigationRail(
-            backgroundColor: Colors.white,
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
-            extended: true,
-            minExtendedWidth: 220,
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24.0),
-              child: Column(
-                children: [
-                  const Icon(Icons.restaurant, color: AppTheme.primaryColor, size: 48),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Caferio Kitchen',
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      color: AppTheme.primaryColor,
-                      fontSize: 20,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            selectedLabelTextStyle: const TextStyle(
-              color: AppTheme.primaryColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-            unselectedLabelTextStyle: const TextStyle(
-              color: AppTheme.textLight,
-              fontSize: 15,
-            ),
-            selectedIconTheme: const IconThemeData(color: AppTheme.primaryColor, size: 28),
-            unselectedIconTheme: const IconThemeData(color: AppTheme.textLight, size: 24),
-            destinations: const [
-              NavigationRailDestination(
-                icon: Icon(Icons.pending_actions_outlined),
-                selectedIcon: Icon(Icons.pending_actions),
-                label: Text('Pending Orders'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.inventory_2_outlined),
-                selectedIcon: Icon(Icons.inventory),
-                label: Text('Shortage'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.check_circle_outline),
-                selectedIcon: Icon(Icons.check_circle),
-                label: Text('Completed'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person),
-                label: Text('Profile'),
+  final List<_NavItem> _navItems = const [
+    _NavItem(icon: Icons.pending_actions_outlined, selectedIcon: Icons.pending_actions, label: 'Pending Orders'),
+    _NavItem(icon: Icons.inventory_2_outlined, selectedIcon: Icons.inventory, label: 'Shortage'),
+    _NavItem(icon: Icons.check_circle_outline, selectedIcon: Icons.check_circle, label: 'Completed'),
+    _NavItem(icon: Icons.person_outline, selectedIcon: Icons.person, label: 'Profile'),
+  ];
+
+  void _onDestinationSelected(int index) {
+    setState(() => _selectedIndex = index);
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
+
+  Widget _buildSidebarContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 40),
+        Center(
+          child: Column(
+            children: [
+              const Icon(Icons.restaurant, color: AppTheme.primaryColor, size: 48),
+              const SizedBox(height: 8),
+              Text(
+                'Caferio Kitchen',
+                style: TextStyle(
+                  color: AppTheme.primaryColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
-          
-          const VerticalDivider(thickness: 1, width: 1, color: Color(0xFFEEEEEE)),
-          
-          // Main Content Area
-          Expanded(
-            child: _screens[_selectedIndex],
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 32),
+        const Divider(height: 1),
+        const SizedBox(height: 16),
+        ...List.generate(_navItems.length, (index) {
+          final item = _navItems[index];
+          final isSelected = _selectedIndex == index;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: InkWell(
+              onTap: () => _onDestinationSelected(index),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isSelected ? item.selectedIcon : item.icon,
+                      color: isSelected ? AppTheme.primaryColor : AppTheme.textLight,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      item.label,
+                      style: TextStyle(
+                        color: isSelected ? AppTheme.primaryColor : AppTheme.textLight,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width >= 700;
+
+    if (isWide) {
+      // Desktop / Tablet: Persistent sidebar
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        body: Row(
+          children: [
+            SizedBox(
+              width: 220,
+              child: Container(
+                color: Colors.white,
+                child: _buildSidebarContent(),
+              ),
+            ),
+            const VerticalDivider(thickness: 1, width: 1, color: Color(0xFFEEEEEE)),
+            Expanded(child: _screens[_selectedIndex]),
+          ],
+        ),
+      );
+    } else {
+      // Mobile: Hamburger + Drawer
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundColor,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 1,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: AppTheme.textDark),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+          title: Text(
+            _navItems[_selectedIndex].label,
+            style: const TextStyle(
+              color: AppTheme.primaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          centerTitle: false,
+        ),
+        drawer: Drawer(
+          backgroundColor: Colors.white,
+          child: SafeArea(child: _buildSidebarContent()),
+        ),
+        body: _screens[_selectedIndex],
+      );
+    }
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+  const _NavItem({required this.icon, required this.selectedIcon, required this.label});
 }
