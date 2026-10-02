@@ -38,30 +38,38 @@ class AppProvider with ChangeNotifier {
 
   Future<void> fetchMLStockoutPredictions() async {
     try {
-      final itemsPayload = _inventoryItems.map((i) => {
-        "ingredient": i.name,
-        "current_stock": i.currentStock,
-        "lead_time_days": 1
-      }).toList();
+      final itemsPayload = _inventoryItems
+          .map(
+            (i) => {
+              "ingredient": i.name,
+              "current_stock": i.currentStock,
+              "lead_time_days": 1,
+            },
+          )
+          .toList();
 
       final res = await http.post(
         Uri.parse('http://127.0.0.1:8000/predict/stockout'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'items': itemsPayload, 'horizon_days': 21})
+        body: jsonEncode({'items': itemsPayload, 'horizon_days': 21}),
       );
-      
+
       if (res.statusCode == 200) {
         final results = jsonDecode(res.body)['results'] as List;
         for (var resItem in results) {
           final ingredientName = resItem['ingredient'];
-          
-          final itemIndex = _inventoryItems.indexWhere((i) => i.name == ingredientName);
+
+          final itemIndex = _inventoryItems.indexWhere(
+            (i) => i.name == ingredientName,
+          );
           if (itemIndex != -1) {
             final item = _inventoryItems[itemIndex];
             item.stockStatus = resItem['status'];
             item.daysLeft = resItem['days_left'];
             if (resItem['runout_expected'] != null) {
-              item.expectedRunOutDate = DateTime.tryParse(resItem['runout_expected']);
+              item.expectedRunOutDate = DateTime.tryParse(
+                resItem['runout_expected'],
+              );
             }
           }
         }
@@ -90,7 +98,9 @@ class AppProvider with ChangeNotifier {
         item.stockStatus = 'OK';
         item.daysLeft = rnd.nextInt(15) + 5; // 5 to 19
       }
-      item.expectedRunOutDate = DateTime.now().add(Duration(days: item.daysLeft ?? 0));
+      item.expectedRunOutDate = DateTime.now().add(
+        Duration(days: item.daysLeft ?? 0),
+      );
     }
     notifyListeners();
   }
@@ -101,10 +111,10 @@ class AppProvider with ChangeNotifier {
       final item = _inventoryItems[index];
       item.currentStock += amount;
       item.lastRefilledDate = DateTime.now();
-      
+
       // Update ML prediction now that stock changed
       await fetchMLStockoutPredictions();
-      
+
       // Send refill log to Python backend
       try {
         await http.post(
@@ -114,7 +124,7 @@ class AppProvider with ChangeNotifier {
             'ingredient': item.name,
             'amount': amount,
             'date': item.lastRefilledDate!.toIso8601String(),
-          })
+          }),
         );
       } catch (e) {
         debugPrint('Failed to log refill to ML backend: $e');
@@ -128,6 +138,7 @@ class AppProvider with ChangeNotifier {
     _fetchOrders();
     _loadRecommendations();
     _loadCart();
+    _loadOrders();
 
     _supabase.auth.onAuthStateChange.listen((data) {
       if (data.event == AuthChangeEvent.signedOut) {
@@ -137,20 +148,24 @@ class AppProvider with ChangeNotifier {
         _fetchOrders();
         _loadRecommendations();
         _loadCart();
+        _loadOrders();
       }
     });
 
     if (!_isSubscribed) {
       _isSubscribed = true;
       // Listen to real-time order changes
-      _supabase.channel('public:orders').onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'orders',
-        callback: (payload) {
-          _fetchOrders();
-        },
-      ).subscribe();
+      _supabase
+          .channel('public:orders')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'orders',
+            callback: (payload) {
+              _fetchOrders();
+            },
+          )
+          .subscribe();
     }
   }
 
@@ -160,12 +175,12 @@ class AppProvider with ChangeNotifier {
     _customerBehaviour = null;
     _cartRecommendations.clear();
     _recommendedItems.clear();
-    
+
     // Reset favourites to prevent leakage between users
     for (var item in _menuItems) {
       item.isFavourite = false;
     }
-    
+
     notifyListeners();
   }
 
@@ -196,9 +211,16 @@ class AppProvider with ChangeNotifier {
           for (final item in decoded) {
             final cartItem = CartItem.fromJson(item as Map<String, dynamic>);
             // Verify the item still exists in the menu catalogue
-            final menuIndex = _menuItems.indexWhere((m) => m.id == cartItem.menuItem.id);
+            final menuIndex = _menuItems.indexWhere(
+              (m) => m.id == cartItem.menuItem.id,
+            );
             if (menuIndex >= 0) {
-              _cart.add(CartItem(menuItem: _menuItems[menuIndex], quantity: cartItem.quantity));
+              _cart.add(
+                CartItem(
+                  menuItem: _menuItems[menuIndex],
+                  quantity: cartItem.quantity,
+                ),
+              );
             }
           }
           notifyListeners();
@@ -207,6 +229,46 @@ class AppProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error loading cart: $e');
+    }
+  }
+
+  Future<void> _saveOrders() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final key = 'orders_${user.id}';
+        final ordersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
+        await prefs.setString(key, ordersJson);
+      }
+    } catch (e) {
+      debugPrint('Error saving local orders: $e');
+    }
+  }
+
+  Future<void> _loadOrders() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final key = 'orders_${user.id}';
+        final ordersString = prefs.getString(key);
+        if (ordersString != null) {
+          final decoded = jsonDecode(ordersString) as List;
+          final localOrders = decoded
+              .map((item) => Order.fromJson(item as Map<String, dynamic>))
+              .toList();
+
+          // Merge with existing (if Supabase succeeded, we don't want to overwrite with old local data)
+          // But if Supabase failed, _orders is empty, so we just use local.
+          if (_orders.isEmpty) {
+            _orders.addAll(localOrders);
+            notifyListeners();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading local orders: $e');
     }
   }
 
@@ -224,8 +286,9 @@ class AppProvider with ChangeNotifier {
       );
 
       if (customerId != null) {
-        _customerBehaviour =
-            await _recommendationService.getCustomerBehaviour(customerId);
+        _customerBehaviour = await _recommendationService.getCustomerBehaviour(
+          customerId,
+        );
       }
     } catch (e) {
       debugPrint('Error loading recommendations: \$e');
@@ -280,7 +343,7 @@ class AppProvider with ChangeNotifier {
               orElse: () => MenuItem(
                 id: menuItemId,
                 name: 'Item #$menuItemId',
-      ingredients: [],
+                ingredients: [],
                 description: '',
                 price: 0,
                 category: 'General',
@@ -296,29 +359,37 @@ class AppProvider with ChangeNotifier {
             orElse: () => OrderStatus.received,
           );
 
-          _orders.add(Order(
-            id: row['id']?.toString() ?? '',
-            customerId: row['customer_id']?.toString(),
-            items: cartItems,
-            totalAmount: (row['total_amount'] is num)
-                ? (row['total_amount'] as num).toDouble()
-                : 0.0,
-            createdAt: row['created_at'] != null
-                ? DateTime.tryParse(row['created_at'].toString()) ??
-                    DateTime.now()
-                : DateTime.now(),
-            servedAt: row['served_at'] != null
-                ? DateTime.tryParse(row['served_at'].toString())
-                : null,
-            status: status,
-          ));
+          _orders.add(
+            Order(
+              id: row['id']?.toString() ?? '',
+              customerId: row['customer_id']?.toString(),
+              items: cartItems,
+              totalAmount: (row['total_amount'] is num)
+                  ? (row['total_amount'] as num).toDouble()
+                  : 0.0,
+              createdAt: row['created_at'] != null
+                  ? DateTime.tryParse(row['created_at'].toString()) ??
+                        DateTime.now()
+                  : DateTime.now(),
+              servedAt: row['served_at'] != null
+                  ? DateTime.tryParse(row['served_at'].toString())
+                  : null,
+              status: status,
+            ),
+          );
         } catch (e) {
           debugPrint('Error parsing order: $e | row: $row');
         }
       }
+
+      // Save successfully fetched Supabase orders locally so they persist across offline/login
+      _saveOrders();
       notifyListeners();
     } catch (e) {
-      debugPrint('Error fetching orders: $e');
+      debugPrint(
+        'Error fetching orders from Supabase (falling back to local cache): $e',
+      );
+      // On failure, _loadOrders() handles local restoration in _initSupabase.
     }
   }
 
@@ -346,7 +417,8 @@ class AppProvider with ChangeNotifier {
       description: 'Grilled cottage cheese with spices',
       price: 220.0,
       category: 'Starters',
-      imageUrl: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '2',
@@ -355,7 +427,8 @@ class AppProvider with ChangeNotifier {
       description: 'Spicy, deep-fried chicken starter',
       price: 250.0,
       category: 'Starters',
-      imageUrl: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&q=80&w=400',
     ),
 
     // --- Curry ---
@@ -366,7 +439,8 @@ class AppProvider with ChangeNotifier {
       description: 'Creamy and rich tomato-based curry',
       price: 320.0,
       category: 'Curry',
-      imageUrl: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '4',
@@ -384,7 +458,8 @@ class AppProvider with ChangeNotifier {
       description: 'Authentic Kerala style chicken curry',
       price: 350.0,
       category: 'Curry',
-      imageUrl: 'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '6',
@@ -420,7 +495,8 @@ class AppProvider with ChangeNotifier {
       description: 'Spicy Indo-Chinese chicken gravy',
       price: 280.0,
       category: 'Curry',
-      imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '10',
@@ -514,7 +590,8 @@ class AppProvider with ChangeNotifier {
       description: 'Traditional Japanese sushi rolls',
       price: 450.0,
       category: 'Chinese Cuisine',
-      imageUrl: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '20',
@@ -532,7 +609,8 @@ class AppProvider with ChangeNotifier {
       description: 'Spicy and tangy Chinese style chicken',
       price: 290.0,
       category: 'Chinese Cuisine',
-      imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '22',
@@ -541,7 +619,8 @@ class AppProvider with ChangeNotifier {
       description: 'Stir-fried noodles with fresh vegetables',
       price: 180.0,
       category: 'Chinese Cuisine',
-      imageUrl: 'https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1552611052-33e04de081de?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '23',
@@ -550,7 +629,8 @@ class AppProvider with ChangeNotifier {
       description: 'Wok-tossed noodles with chicken strips',
       price: 220.0,
       category: 'Chinese Cuisine',
-      imageUrl: 'https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '24',
@@ -700,7 +780,8 @@ class AppProvider with ChangeNotifier {
       description: 'Traditional Yemeni rice dish cooked underground',
       price: 320.0,
       category: 'Mandhi Options',
-      imageUrl: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '40',
@@ -709,7 +790,8 @@ class AppProvider with ChangeNotifier {
       description: 'Deep fried milk dumplings in sugar syrup',
       price: 80.0,
       category: 'Desserts',
-      imageUrl: 'https://images.unsplash.com/photo-1596803244618-8dbee441d70b?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1596803244618-8dbee441d70b?auto=format&fit=crop&q=80&w=400',
     ),
     MenuItem(
       id: '41',
@@ -718,7 +800,8 @@ class AppProvider with ChangeNotifier {
       description: 'Refreshing yogurt-based mango drink',
       price: 90.0,
       category: 'Beverages',
-      imageUrl: 'https://images.unsplash.com/photo-1546888281-7c9c04961d6e?auto=format&fit=crop&q=80&w=400',
+      imageUrl:
+          'https://images.unsplash.com/photo-1546888281-7c9c04961d6e?auto=format&fit=crop&q=80&w=400',
     ),
   ];
 
@@ -738,20 +821,26 @@ class AppProvider with ChangeNotifier {
     List<MenuItem> items;
     if (_selectedCategory == 'All') {
       if (_shuffledAllItems == null) {
-        _shuffledAllItems = List<MenuItem>.from(_menuItems)..shuffle(Random(42));
+        _shuffledAllItems = List<MenuItem>.from(_menuItems)
+          ..shuffle(Random(42));
       }
       items = _shuffledAllItems!;
     } else {
-      items = _menuItems.where((item) => item.category == _selectedCategory).toList();
+      items = _menuItems
+          .where((item) => item.category == _selectedCategory)
+          .toList();
     }
 
     if (_searchQuery.isNotEmpty) {
       final query = _searchQuery.toLowerCase();
-      items = items.where((item) => item.name.toLowerCase().contains(query)).toList();
+      items = items
+          .where((item) => item.name.toLowerCase().contains(query))
+          .toList();
     }
 
     return items;
   }
+
   List<MenuItem> get specialItems {
     final list = _menuItems.where((item) => item.isSpecial).toList();
     if (list.isEmpty) {
@@ -760,7 +849,7 @@ class AppProvider with ChangeNotifier {
     }
     return list;
   }
-  
+
   List<MenuItem> get topPicks {
     final list = _menuItems.where((item) => item.isTopPick).toList();
     if (list.isEmpty) {
@@ -769,12 +858,17 @@ class AppProvider with ChangeNotifier {
     }
     return list;
   }
-  List<MenuItem> get favouriteItems => _menuItems.where((item) => item.isFavourite).toList();
+
+  List<MenuItem> get favouriteItems =>
+      _menuItems.where((item) => item.isFavourite).toList();
 
   // Cart
   final List<CartItem> _cart = [];
   List<CartItem> get cart => _cart;
-  double get cartTotal => _cart.fold(0, (total, item) => total + (item.menuItem.price * item.quantity));
+  double get cartTotal => _cart.fold(
+    0,
+    (total, item) => total + (item.menuItem.price * item.quantity),
+  );
 
   // Orders
   final List<Order> _orders = [];
@@ -822,7 +916,9 @@ class AppProvider with ChangeNotifier {
   }
 
   void addToCart(MenuItem item) {
-    final index = _cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
+    final index = _cart.indexWhere(
+      (cartItem) => cartItem.menuItem.id == item.id,
+    );
     if (index >= 0) {
       _cart[index].quantity++;
     } else {
@@ -834,7 +930,9 @@ class AppProvider with ChangeNotifier {
   }
 
   void removeFromCart(MenuItem item) {
-    final index = _cart.indexWhere((cartItem) => cartItem.menuItem.id == item.id);
+    final index = _cart.indexWhere(
+      (cartItem) => cartItem.menuItem.id == item.id,
+    );
     if (index >= 0) {
       if (_cart[index].quantity > 1) {
         _cart[index].quantity--;
@@ -881,12 +979,18 @@ class AppProvider with ChangeNotifier {
       if (orderId.isNotEmpty) {
         // Insert order_items rows (best-effort — ignore failure)
         try {
-          final orderItemsPayload = cartSnapshot.map((c) => {
-            'order_id': orderId,
-            'menu_item_id': c.menuItem.id,
-            'quantity': c.quantity,
-          }).toList();
-          await _supabase.from('order_items').insert(orderItemsPayload)
+          final orderItemsPayload = cartSnapshot
+              .map(
+                (c) => {
+                  'order_id': orderId,
+                  'menu_item_id': c.menuItem.id,
+                  'quantity': c.quantity,
+                },
+              )
+              .toList();
+          await _supabase
+              .from('order_items')
+              .insert(orderItemsPayload)
               .timeout(const Duration(seconds: 5));
         } catch (e) {
           debugPrint('order_items insert failed (non-fatal): $e');
@@ -902,14 +1006,17 @@ class AppProvider with ChangeNotifier {
     }
 
     // Always add the order to local state immediately
-    _orders.insert(0, Order(
-      id: orderId,
-      customerId: customerId,
-      items: cartSnapshot,
-      totalAmount: total,
-      createdAt: now,
-      status: OrderStatus.received,
-    ));
+    _orders.insert(
+      0,
+      Order(
+        id: orderId,
+        customerId: customerId,
+        items: cartSnapshot,
+        totalAmount: total,
+        createdAt: now,
+        status: OrderStatus.received,
+      ),
+    );
 
     // Record purchases for recommendation engine (fire-and-forget)
     _recommendationService
@@ -924,11 +1031,11 @@ class AppProvider with ChangeNotifier {
 
     _cart.clear();
     _cartRecommendations = [];
-    _saveCart();
+    await _saveCart();
+    await _saveOrders();
     notifyListeners();
     return true;
   }
-
 
   Future<void> advanceOrderStatus(String orderId) async {
     final index = _orders.indexWhere((o) => o.id == orderId);
@@ -945,16 +1052,22 @@ class AppProvider with ChangeNotifier {
           items: order.items,
           totalAmount: order.totalAmount,
           createdAt: order.createdAt,
-          servedAt: newStatus == OrderStatus.served ? DateTime.now() : order.servedAt,
+          servedAt: newStatus == OrderStatus.served
+              ? DateTime.now()
+              : order.servedAt,
           status: newStatus,
         );
+        _saveOrders();
         notifyListeners();
 
         // Sync to Supabase (best-effort — local ID orders won't sync)
         if (!orderId.startsWith('local_')) {
           try {
             final updateData = <String, dynamic>{'status': newStatus.name};
-            await _supabase.from('orders').update(updateData).eq('id', orderId)
+            await _supabase
+                .from('orders')
+                .update(updateData)
+                .eq('id', orderId)
                 .timeout(const Duration(seconds: 5));
           } catch (e) {
             debugPrint('Error syncing order status to Supabase: $e');
@@ -967,326 +1080,464 @@ class AppProvider with ChangeNotifier {
   // --- Inventory Items for Kitchen Shortage ---
   final List<InventoryItem> _inventoryItems = [
     // 1. Vegetables
-    InventoryItem(id: 'inv1', name: 'Onion',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv2', name: 'Tomato',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv3', name: 'Potato',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv4', name: 'Carrot',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv5', name: 'Cabbage',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv6', name: 'Cauliflower',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv7', name: 'Beans',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv8', name: 'Capsicum',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv9', name: 'Green peas',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv10', name: 'Spinach',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv11', name: 'Brinjal/Eggplant',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv12', name: 'Okra/Lady’s finger',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv13', name: 'Cucumber',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv14', name: 'Beetroot',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv15', name: 'Ginger',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv16', name: 'Garlic',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv17', name: 'Green chilli',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv18', name: 'Coriander leaves',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv19', name: 'Curry leaves',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv20', name: 'Mint leaves',
-      category: 'Vegetables'),
-    InventoryItem(id: 'inv21', name: 'Lemon',
-      category: 'Vegetables'),
-    
+    InventoryItem(id: 'inv1', name: 'Onion', category: 'Vegetables'),
+    InventoryItem(id: 'inv2', name: 'Tomato', category: 'Vegetables'),
+    InventoryItem(id: 'inv3', name: 'Potato', category: 'Vegetables'),
+    InventoryItem(id: 'inv4', name: 'Carrot', category: 'Vegetables'),
+    InventoryItem(id: 'inv5', name: 'Cabbage', category: 'Vegetables'),
+    InventoryItem(id: 'inv6', name: 'Cauliflower', category: 'Vegetables'),
+    InventoryItem(id: 'inv7', name: 'Beans', category: 'Vegetables'),
+    InventoryItem(id: 'inv8', name: 'Capsicum', category: 'Vegetables'),
+    InventoryItem(id: 'inv9', name: 'Green peas', category: 'Vegetables'),
+    InventoryItem(id: 'inv10', name: 'Spinach', category: 'Vegetables'),
+    InventoryItem(
+      id: 'inv11',
+      name: 'Brinjal/Eggplant',
+      category: 'Vegetables',
+    ),
+    InventoryItem(
+      id: 'inv12',
+      name: 'Okra/Lady’s finger',
+      category: 'Vegetables',
+    ),
+    InventoryItem(id: 'inv13', name: 'Cucumber', category: 'Vegetables'),
+    InventoryItem(id: 'inv14', name: 'Beetroot', category: 'Vegetables'),
+    InventoryItem(id: 'inv15', name: 'Ginger', category: 'Vegetables'),
+    InventoryItem(id: 'inv16', name: 'Garlic', category: 'Vegetables'),
+    InventoryItem(id: 'inv17', name: 'Green chilli', category: 'Vegetables'),
+    InventoryItem(
+      id: 'inv18',
+      name: 'Coriander leaves',
+      category: 'Vegetables',
+    ),
+    InventoryItem(id: 'inv19', name: 'Curry leaves', category: 'Vegetables'),
+    InventoryItem(id: 'inv20', name: 'Mint leaves', category: 'Vegetables'),
+    InventoryItem(id: 'inv21', name: 'Lemon', category: 'Vegetables'),
+
     // 2. Fruits
-    InventoryItem(id: 'inv22', name: 'Apple',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv23', name: 'Banana',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv24', name: 'Orange',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv25', name: 'Pineapple',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv26', name: 'Papaya',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv27', name: 'Mango',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv28', name: 'Watermelon',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv29', name: 'Grapes',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv30', name: 'Pomegranate',
-      category: 'Fruits'),
-    InventoryItem(id: 'inv31', name: 'Coconut',
-      category: 'Fruits'),
+    InventoryItem(id: 'inv22', name: 'Apple', category: 'Fruits'),
+    InventoryItem(id: 'inv23', name: 'Banana', category: 'Fruits'),
+    InventoryItem(id: 'inv24', name: 'Orange', category: 'Fruits'),
+    InventoryItem(id: 'inv25', name: 'Pineapple', category: 'Fruits'),
+    InventoryItem(id: 'inv26', name: 'Papaya', category: 'Fruits'),
+    InventoryItem(id: 'inv27', name: 'Mango', category: 'Fruits'),
+    InventoryItem(id: 'inv28', name: 'Watermelon', category: 'Fruits'),
+    InventoryItem(id: 'inv29', name: 'Grapes', category: 'Fruits'),
+    InventoryItem(id: 'inv30', name: 'Pomegranate', category: 'Fruits'),
+    InventoryItem(id: 'inv31', name: 'Coconut', category: 'Fruits'),
 
     // 3. Grains & Cereals
-    InventoryItem(id: 'inv32', name: 'Rice',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv33', name: 'Wheat',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv34', name: 'Maida',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv35', name: 'Atta',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv36', name: 'Rava/Semolina',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv37', name: 'Corn flour',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv38', name: 'Rice flour',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv39', name: 'Oats',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv40', name: 'Poha',
-      category: 'Grains & Cereals'),
-    InventoryItem(id: 'inv41', name: 'Vermicelli',
-      category: 'Grains & Cereals'),
+    InventoryItem(id: 'inv32', name: 'Rice', category: 'Grains & Cereals'),
+    InventoryItem(id: 'inv33', name: 'Wheat', category: 'Grains & Cereals'),
+    InventoryItem(id: 'inv34', name: 'Maida', category: 'Grains & Cereals'),
+    InventoryItem(id: 'inv35', name: 'Atta', category: 'Grains & Cereals'),
+    InventoryItem(
+      id: 'inv36',
+      name: 'Rava/Semolina',
+      category: 'Grains & Cereals',
+    ),
+    InventoryItem(
+      id: 'inv37',
+      name: 'Corn flour',
+      category: 'Grains & Cereals',
+    ),
+    InventoryItem(
+      id: 'inv38',
+      name: 'Rice flour',
+      category: 'Grains & Cereals',
+    ),
+    InventoryItem(id: 'inv39', name: 'Oats', category: 'Grains & Cereals'),
+    InventoryItem(id: 'inv40', name: 'Poha', category: 'Grains & Cereals'),
+    InventoryItem(
+      id: 'inv41',
+      name: 'Vermicelli',
+      category: 'Grains & Cereals',
+    ),
 
     // 4. Pulses & Legumes
-    InventoryItem(id: 'inv42', name: 'Toor dal',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv43', name: 'Moong dal',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv44', name: 'Masoor dal',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv45', name: 'Chana dal',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv46', name: 'Urad dal',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv47', name: 'Chickpeas',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv48', name: 'Rajma',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv49', name: 'Green gram',
-      category: 'Pulses & Legumes'),
-    InventoryItem(id: 'inv50', name: 'Black gram',
-      category: 'Pulses & Legumes'),
+    InventoryItem(id: 'inv42', name: 'Toor dal', category: 'Pulses & Legumes'),
+    InventoryItem(id: 'inv43', name: 'Moong dal', category: 'Pulses & Legumes'),
+    InventoryItem(
+      id: 'inv44',
+      name: 'Masoor dal',
+      category: 'Pulses & Legumes',
+    ),
+    InventoryItem(id: 'inv45', name: 'Chana dal', category: 'Pulses & Legumes'),
+    InventoryItem(id: 'inv46', name: 'Urad dal', category: 'Pulses & Legumes'),
+    InventoryItem(id: 'inv47', name: 'Chickpeas', category: 'Pulses & Legumes'),
+    InventoryItem(id: 'inv48', name: 'Rajma', category: 'Pulses & Legumes'),
+    InventoryItem(
+      id: 'inv49',
+      name: 'Green gram',
+      category: 'Pulses & Legumes',
+    ),
+    InventoryItem(
+      id: 'inv50',
+      name: 'Black gram',
+      category: 'Pulses & Legumes',
+    ),
 
     // 5. Spices & Seasonings
-    InventoryItem(id: 'inv51', name: 'Salt',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv52', name: 'Sugar',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv53', name: 'Black pepper',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv54', name: 'Turmeric',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv55', name: 'Red chilli powder',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv56', name: 'Coriander powder',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv57', name: 'Cumin',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv58', name: 'Mustard seeds',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv59', name: 'Fennel',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv60', name: 'Cardamom',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv61', name: 'Cloves',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv62', name: 'Cinnamon',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv63', name: 'Bay leaf',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv64', name: 'Star anise',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv65', name: 'Fenugreek',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv66', name: 'Garam masala',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv67', name: 'Curry powder',
-      category: 'Spices & Seasonings'),
-    InventoryItem(id: 'inv68', name: 'Asafoetida (hing)',
-      category: 'Spices & Seasonings'),
+    InventoryItem(id: 'inv51', name: 'Salt', category: 'Spices & Seasonings'),
+    InventoryItem(id: 'inv52', name: 'Sugar', category: 'Spices & Seasonings'),
+    InventoryItem(
+      id: 'inv53',
+      name: 'Black pepper',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv54',
+      name: 'Turmeric',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv55',
+      name: 'Red chilli powder',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv56',
+      name: 'Coriander powder',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(id: 'inv57', name: 'Cumin', category: 'Spices & Seasonings'),
+    InventoryItem(
+      id: 'inv58',
+      name: 'Mustard seeds',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(id: 'inv59', name: 'Fennel', category: 'Spices & Seasonings'),
+    InventoryItem(
+      id: 'inv60',
+      name: 'Cardamom',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(id: 'inv61', name: 'Cloves', category: 'Spices & Seasonings'),
+    InventoryItem(
+      id: 'inv62',
+      name: 'Cinnamon',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv63',
+      name: 'Bay leaf',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv64',
+      name: 'Star anise',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv65',
+      name: 'Fenugreek',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv66',
+      name: 'Garam masala',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv67',
+      name: 'Curry powder',
+      category: 'Spices & Seasonings',
+    ),
+    InventoryItem(
+      id: 'inv68',
+      name: 'Asafoetida (hing)',
+      category: 'Spices & Seasonings',
+    ),
 
     // 6. Dairy Products
-    InventoryItem(id: 'inv69', name: 'Milk',
-      category: 'Dairy Products'),
-    InventoryItem(id: 'inv70', name: 'Curd/Yogurt',
-      category: 'Dairy Products'),
-    InventoryItem(id: 'inv71', name: 'Butter',
-      category: 'Dairy Products'),
-    InventoryItem(id: 'inv72', name: 'Ghee',
-      category: 'Dairy Products'),
-    InventoryItem(id: 'inv73', name: 'Cheese',
-      category: 'Dairy Products'),
-    InventoryItem(id: 'inv74', name: 'Paneer',
-      category: 'Dairy Products'),
-    InventoryItem(id: 'inv75', name: 'Cream',
-      category: 'Dairy Products'),
-    InventoryItem(id: 'inv76', name: 'Condensed milk',
-      category: 'Dairy Products'),
+    InventoryItem(id: 'inv69', name: 'Milk', category: 'Dairy Products'),
+    InventoryItem(id: 'inv70', name: 'Curd/Yogurt', category: 'Dairy Products'),
+    InventoryItem(id: 'inv71', name: 'Butter', category: 'Dairy Products'),
+    InventoryItem(id: 'inv72', name: 'Ghee', category: 'Dairy Products'),
+    InventoryItem(id: 'inv73', name: 'Cheese', category: 'Dairy Products'),
+    InventoryItem(id: 'inv74', name: 'Paneer', category: 'Dairy Products'),
+    InventoryItem(id: 'inv75', name: 'Cream', category: 'Dairy Products'),
+    InventoryItem(
+      id: 'inv76',
+      name: 'Condensed milk',
+      category: 'Dairy Products',
+    ),
 
     // 7. Meat, Fish & Eggs
-    InventoryItem(id: 'inv77', name: 'Chicken',
-      category: 'Meat, Fish & Eggs'),
-    InventoryItem(id: 'inv78', name: 'Mutton',
-      category: 'Meat, Fish & Eggs'),
-    InventoryItem(id: 'inv79', name: 'Beef',
-      category: 'Meat, Fish & Eggs'),
-    InventoryItem(id: 'inv80', name: 'Fish',
-      category: 'Meat, Fish & Eggs'),
-    InventoryItem(id: 'inv81', name: 'Prawns/Shrimp',
-      category: 'Meat, Fish & Eggs'),
-    InventoryItem(id: 'inv82', name: 'Other seafood',
-      category: 'Meat, Fish & Eggs'),
-    InventoryItem(id: 'inv83', name: 'Eggs',
-      category: 'Meat, Fish & Eggs'),
+    InventoryItem(id: 'inv77', name: 'Chicken', category: 'Meat, Fish & Eggs'),
+    InventoryItem(id: 'inv78', name: 'Mutton', category: 'Meat, Fish & Eggs'),
+    InventoryItem(id: 'inv79', name: 'Beef', category: 'Meat, Fish & Eggs'),
+    InventoryItem(id: 'inv80', name: 'Fish', category: 'Meat, Fish & Eggs'),
+    InventoryItem(
+      id: 'inv81',
+      name: 'Prawns/Shrimp',
+      category: 'Meat, Fish & Eggs',
+    ),
+    InventoryItem(
+      id: 'inv82',
+      name: 'Other seafood',
+      category: 'Meat, Fish & Eggs',
+    ),
+    InventoryItem(id: 'inv83', name: 'Eggs', category: 'Meat, Fish & Eggs'),
 
     // 8. Oils & Sauces
-    InventoryItem(id: 'inv84', name: 'Cooking oil',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv85', name: 'Coconut oil',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv86', name: 'Olive oil',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv87', name: 'Sesame oil',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv88', name: 'Soy sauce',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv89', name: 'Tomato ketchup',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv90', name: 'Chilli sauce',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv91', name: 'Vinegar',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv92', name: 'Mayonnaise',
-      category: 'Oils & Sauces'),
-    InventoryItem(id: 'inv93', name: 'Mustard sauce',
-      category: 'Oils & Sauces'),
+    InventoryItem(id: 'inv84', name: 'Cooking oil', category: 'Oils & Sauces'),
+    InventoryItem(id: 'inv85', name: 'Coconut oil', category: 'Oils & Sauces'),
+    InventoryItem(id: 'inv86', name: 'Olive oil', category: 'Oils & Sauces'),
+    InventoryItem(id: 'inv87', name: 'Sesame oil', category: 'Oils & Sauces'),
+    InventoryItem(id: 'inv88', name: 'Soy sauce', category: 'Oils & Sauces'),
+    InventoryItem(
+      id: 'inv89',
+      name: 'Tomato ketchup',
+      category: 'Oils & Sauces',
+    ),
+    InventoryItem(id: 'inv90', name: 'Chilli sauce', category: 'Oils & Sauces'),
+    InventoryItem(id: 'inv91', name: 'Vinegar', category: 'Oils & Sauces'),
+    InventoryItem(id: 'inv92', name: 'Mayonnaise', category: 'Oils & Sauces'),
+    InventoryItem(
+      id: 'inv93',
+      name: 'Mustard sauce',
+      category: 'Oils & Sauces',
+    ),
 
     // 9. Bakery & Baking Materials
-    InventoryItem(id: 'inv94', name: 'Bread',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv95', name: 'Buns',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv96', name: 'Yeast',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv97', name: 'Baking powder',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv98', name: 'Baking soda',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv99', name: 'Cocoa powder',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv100', name: 'Chocolate',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv101', name: 'Vanilla essence',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv102', name: 'Custard powder',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv103', name: 'Corn starch',
-      category: 'Bakery & Baking Materials'),
-    InventoryItem(id: 'inv104', name: 'Icing sugar',
-      category: 'Bakery & Baking Materials'),
+    InventoryItem(
+      id: 'inv94',
+      name: 'Bread',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv95',
+      name: 'Buns',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv96',
+      name: 'Yeast',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv97',
+      name: 'Baking powder',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv98',
+      name: 'Baking soda',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv99',
+      name: 'Cocoa powder',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv100',
+      name: 'Chocolate',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv101',
+      name: 'Vanilla essence',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv102',
+      name: 'Custard powder',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv103',
+      name: 'Corn starch',
+      category: 'Bakery & Baking Materials',
+    ),
+    InventoryItem(
+      id: 'inv104',
+      name: 'Icing sugar',
+      category: 'Bakery & Baking Materials',
+    ),
 
     // 10. Canned & Packaged Items
-    InventoryItem(id: 'inv105', name: 'Canned tomatoes',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv106', name: 'Canned fruits',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv107', name: 'Pickles',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv108', name: 'Jam',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv109', name: 'Peanut butter',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv110', name: 'Coconut milk',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv111', name: 'Tomato paste',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv112', name: 'Pasta',
-      category: 'Canned & Packaged Items'),
-    InventoryItem(id: 'inv113', name: 'Noodles',
-      category: 'Canned & Packaged Items'),
+    InventoryItem(
+      id: 'inv105',
+      name: 'Canned tomatoes',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv106',
+      name: 'Canned fruits',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv107',
+      name: 'Pickles',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv108',
+      name: 'Jam',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv109',
+      name: 'Peanut butter',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv110',
+      name: 'Coconut milk',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv111',
+      name: 'Tomato paste',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv112',
+      name: 'Pasta',
+      category: 'Canned & Packaged Items',
+    ),
+    InventoryItem(
+      id: 'inv113',
+      name: 'Noodles',
+      category: 'Canned & Packaged Items',
+    ),
 
     // 11. Beverages
-    InventoryItem(id: 'inv114', name: 'Tea',
-      category: 'Beverages'),
-    InventoryItem(id: 'inv115', name: 'Coffee',
-      category: 'Beverages'),
-    InventoryItem(id: 'inv116', name: 'Milk powder',
-      category: 'Beverages'),
-    InventoryItem(id: 'inv117', name: 'Drinking water',
-      category: 'Beverages'),
-    InventoryItem(id: 'inv118', name: 'Fruit juices',
-      category: 'Beverages'),
-    InventoryItem(id: 'inv119', name: 'Soft drinks',
-      category: 'Beverages'),
-    InventoryItem(id: 'inv120', name: 'Syrups',
-      category: 'Beverages'),
+    InventoryItem(id: 'inv114', name: 'Tea', category: 'Beverages'),
+    InventoryItem(id: 'inv115', name: 'Coffee', category: 'Beverages'),
+    InventoryItem(id: 'inv116', name: 'Milk powder', category: 'Beverages'),
+    InventoryItem(id: 'inv117', name: 'Drinking water', category: 'Beverages'),
+    InventoryItem(id: 'inv118', name: 'Fruit juices', category: 'Beverages'),
+    InventoryItem(id: 'inv119', name: 'Soft drinks', category: 'Beverages'),
+    InventoryItem(id: 'inv120', name: 'Syrups', category: 'Beverages'),
 
     // 12. Frozen Items
-    InventoryItem(id: 'inv121', name: 'Frozen vegetables',
-      category: 'Frozen Items'),
-    InventoryItem(id: 'inv122', name: 'Frozen peas',
-      category: 'Frozen Items'),
-    InventoryItem(id: 'inv123', name: 'Frozen fries',
-      category: 'Frozen Items'),
-    InventoryItem(id: 'inv124', name: 'Frozen chicken',
-      category: 'Frozen Items'),
-    InventoryItem(id: 'inv125', name: 'Frozen seafood',
-      category: 'Frozen Items'),
-    InventoryItem(id: 'inv126', name: 'Ice cream',
-      category: 'Frozen Items'),
+    InventoryItem(
+      id: 'inv121',
+      name: 'Frozen vegetables',
+      category: 'Frozen Items',
+    ),
+    InventoryItem(id: 'inv122', name: 'Frozen peas', category: 'Frozen Items'),
+    InventoryItem(id: 'inv123', name: 'Frozen fries', category: 'Frozen Items'),
+    InventoryItem(
+      id: 'inv124',
+      name: 'Frozen chicken',
+      category: 'Frozen Items',
+    ),
+    InventoryItem(
+      id: 'inv125',
+      name: 'Frozen seafood',
+      category: 'Frozen Items',
+    ),
+    InventoryItem(id: 'inv126', name: 'Ice cream', category: 'Frozen Items'),
 
     // 13. Other Common Ingredients
-    InventoryItem(id: 'inv127', name: 'Cashews',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv128', name: 'Almonds',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv129', name: 'Raisins',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv130', name: 'Peanuts',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv131', name: 'Sesame seeds',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv132', name: 'Coconut',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv133', name: 'Breadcrumbs',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv134', name: 'Papad',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv135', name: 'Food colouring',
-      category: 'Other Common Ingredients'),
-    InventoryItem(id: 'inv136', name: 'Food flavouring',
-      category: 'Other Common Ingredients'),
+    InventoryItem(
+      id: 'inv127',
+      name: 'Cashews',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv128',
+      name: 'Almonds',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv129',
+      name: 'Raisins',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv130',
+      name: 'Peanuts',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv131',
+      name: 'Sesame seeds',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv132',
+      name: 'Coconut',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv133',
+      name: 'Breadcrumbs',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv134',
+      name: 'Papad',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv135',
+      name: 'Food colouring',
+      category: 'Other Common Ingredients',
+    ),
+    InventoryItem(
+      id: 'inv136',
+      name: 'Food flavouring',
+      category: 'Other Common Ingredients',
+    ),
 
     // 14. Kitchen Consumables & Cleaning Materials
-    InventoryItem(id: 'inv137', name: 'Aluminium foil',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv138', name: 'Cling film',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv139', name: 'Baking paper',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv140', name: 'Disposable gloves',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv141', name: 'Paper towels',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv142', name: 'Garbage bags',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv143', name: 'Dishwashing liquid',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv144', name: 'Sanitizer',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv145', name: 'Cleaning brushes',
-      category: 'Kitchen Consumables & Cleaning Materials'),
-    InventoryItem(id: 'inv146', name: 'Sponges',
-      category: 'Kitchen Consumables & Cleaning Materials'),
+    InventoryItem(
+      id: 'inv137',
+      name: 'Aluminium foil',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv138',
+      name: 'Cling film',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv139',
+      name: 'Baking paper',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv140',
+      name: 'Disposable gloves',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv141',
+      name: 'Paper towels',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv142',
+      name: 'Garbage bags',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv143',
+      name: 'Dishwashing liquid',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv144',
+      name: 'Sanitizer',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv145',
+      name: 'Cleaning brushes',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
+    InventoryItem(
+      id: 'inv146',
+      name: 'Sponges',
+      category: 'Kitchen Consumables & Cleaning Materials',
+    ),
   ];
-  
+
   String _inventorySearchQuery = '';
   String get inventorySearchQuery => _inventorySearchQuery;
 
@@ -1294,11 +1545,13 @@ class AppProvider with ChangeNotifier {
     _inventorySearchQuery = query;
     notifyListeners();
   }
-  
+
   List<InventoryItem> get inventoryItems {
     if (_inventorySearchQuery == '') return _inventoryItems;
     final query = _inventorySearchQuery.toLowerCase();
-    return _inventoryItems.where((item) => item.name.toLowerCase().contains(query)).toList();
+    return _inventoryItems
+        .where((item) => item.name.toLowerCase().contains(query))
+        .toList();
   }
 
   Map<String, List<InventoryItem>> get groupedInventoryItems {
@@ -1311,11 +1564,12 @@ class AppProvider with ChangeNotifier {
     }
     return grouped;
   }
-  
+
   void toggleInventoryStock(String id) {
     final index = _inventoryItems.indexWhere((item) => item.id == id);
     if (index >= 0) {
-      _inventoryItems[index].isOutOfStock = !_inventoryItems[index].isOutOfStock;
+      _inventoryItems[index].isOutOfStock =
+          !_inventoryItems[index].isOutOfStock;
       notifyListeners();
     }
   }
