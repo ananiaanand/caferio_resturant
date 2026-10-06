@@ -125,21 +125,7 @@ class DashboardScreen extends StatelessWidget {
 
             // Dynamic Category Items Header & Sections
             if (provider.selectedCategory == 'All') ...[
-              Text('You Might Like', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 22)),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 250,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: provider.specialItems.length,
-                  itemBuilder: (context, index) => Container(
-                    width: 170, 
-                    margin: const EdgeInsets.only(right: 16), 
-                    child: _buildMenuItemCard(context, provider.specialItems[index], provider)
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
+
               
               Text('Top Picks', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 22)),
               const SizedBox(height: 16),
@@ -183,12 +169,19 @@ class DashboardScreen extends StatelessWidget {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.75, // Adjust this to prevent overflow
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
+              gridDelegate: MediaQuery.of(context).size.width < 600
+                  ? const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    )
+                  : const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 220, // slightly larger so they look more proportional
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
               itemCount: provider.currentCategoryItems.length,
               itemBuilder: (context, index) {
                 return _buildMenuItemCard(context, provider.currentCategoryItems[index], provider);

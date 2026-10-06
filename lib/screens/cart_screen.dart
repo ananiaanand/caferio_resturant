@@ -114,13 +114,15 @@ class _CartScreenState extends State<CartScreen> {
                 ],
               ),
             )
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: cartItems.length,
-                    itemBuilder: (context, index) {
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.all(20),
+                          itemCount: cartItems.length,
+                          itemBuilder: (context, index) {
                       final item = cartItems[index];
                       return Container(
                         margin: const EdgeInsets.only(bottom: 16),
@@ -215,13 +217,12 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                       );
                     },
-                  ),
-                ),
-                // Cart Cross-Sell Recommendations
-                const CartRecommendationsWidget(),
-                // Checkout Panel
-                Container(
-                  padding: const EdgeInsets.all(24),
+                        ),
+                        // Cart Cross-Sell Recommendations
+                        const CartRecommendationsWidget(),
+                  // Checkout Panel
+                  Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
@@ -253,7 +254,7 @@ class _CartScreenState extends State<CartScreen> {
                           ],
                         ),
                         const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
                           child: Divider(),
                         ),
                         Row(
@@ -266,14 +267,14 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         // Checkout Button with loading state
                         InkWell(
                           onTap: _isPlacingOrder ? null : () => _handleCheckout(provider),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             width: double.infinity,
-                            height: 60,
+                            height: 54,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -317,8 +318,9 @@ class _CartScreenState extends State<CartScreen> {
                       ],
                     ),
                   ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
     );
   }
