@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
-import 'package:caferio/services/auth_service.dart';
 import 'package:caferio/utils/theme.dart';
 import 'package:caferio/models/customer_behaviour.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -13,11 +11,6 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final favourites = provider.favouriteItems;
-
-    final user = Supabase.instance.client.auth.currentUser;
-    final userMetadata = user?.userMetadata;
-    final displayName = userMetadata?['full_name'] ?? userMetadata?['username'] ?? 'User';
-    final username = userMetadata?['username'] ?? 'user';
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -57,13 +50,13 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    displayName,
+                    'Guest',
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 26, color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '@$username',
-                    style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
+                  const Text(
+                    'Welcome to Caferio',
+                    style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -151,95 +144,7 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
 
-            const SizedBox(height: 24),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                children: [
-                  _buildProfileOption(
-                    context, 
-                    icon: Icons.logout, 
-                    title: 'Log Out', 
-                    color: AppTheme.textDark,
-                    onTap: () => AuthService().signOut(),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildProfileOption(
-                    context, 
-                    icon: Icons.delete_outline, 
-                    title: 'Delete Account', 
-                    color: Colors.red,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          title: const Text('Delete Account'),
-                          content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel', style: TextStyle(color: AppTheme.textLight)),
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                Navigator.pop(context);
-                                try {
-                                  // Call Supabase RPC to delete the user account permanently
-                                  await Supabase.instance.client.rpc('delete_user');
-                                  await AuthService().signOut();
-                                } catch (e) {
-                                  debugPrint('Error deleting account: $e');
-                                  // Fallback: just sign out if the RPC fails
-                                  await AuthService().signOut();
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              child: const Text('Delete', style: TextStyle(color: Colors.white)),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
             const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileOption(BuildContext context, {required IconData icon, required String title, required Color color, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2)),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 16),
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDark)),
-            const Spacer(),
-            Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 16),
           ],
         ),
       ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:caferio/utils/theme.dart';
-import 'package:caferio/services/auth_service.dart';
 
 class KitchenProfileScreen extends StatelessWidget {
   const KitchenProfileScreen({super.key});
@@ -18,55 +17,32 @@ class KitchenProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Manage your kitchen account',
+            'Kitchen account',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 48),
           
-          Center(
+          const Center(
             child: Column(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 60,
                   backgroundColor: AppTheme.primaryColor,
                   child: Icon(Icons.person, size: 60, color: Colors.white),
                 ),
-                const SizedBox(height: 24),
-                const Text(
+                SizedBox(height: 24),
+                Text(
                   'Head Chef',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppTheme.textDark),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
-                  AuthService().currentUser?.email ?? 'chef@caferio.com',
-                  style: const TextStyle(fontSize: 16, color: AppTheme.textLight),
-                ),
-                const SizedBox(height: 48),
-                
-                SizedBox(
-                  width: 200,
-                  child: ElevatedButton(
-                    onPressed: () => AuthService().signOut(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.logout),
-                        SizedBox(width: 8),
-                        Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
+                  'chef@caferio.com',
+                  style: TextStyle(fontSize: 16, color: AppTheme.textLight),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

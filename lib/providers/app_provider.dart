@@ -12,7 +12,6 @@ import '../models/recommendation.dart';
 import '../models/customer_behaviour.dart';
 import '../services/recommendation_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AppProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
@@ -141,19 +140,6 @@ class AppProvider with ChangeNotifier {
     _loadOrders();
     _loadFavourites();
 
-    _supabase.auth.onAuthStateChange.listen((data) {
-      if (data.event == AuthChangeEvent.signedOut) {
-        clearUserData();
-      } else if (data.event == AuthChangeEvent.signedIn) {
-        clearUserData(); // reset previous user's data just in case
-        _fetchOrders();
-        _loadRecommendations();
-        _loadCart();
-        _loadOrders();
-        _loadFavourites();
-      }
-    });
-
     if (!_isSubscribed) {
       _isSubscribed = true;
       // Listen to real-time order changes
@@ -171,30 +157,12 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  void clearUserData() {
-    _cart.clear();
-    _orders.clear();
-    _customerBehaviour = null;
-    _cartRecommendations.clear();
-    _recommendedItems.clear();
-
-    // Reset favourites to prevent leakage between users
-    for (var item in _menuItems) {
-      item.isFavourite = false;
-    }
-
-    notifyListeners();
-  }
-
   Future<void> _saveCart() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        final prefs = await SharedPreferences.getInstance();
-        final key = 'cart_${user.id}';
-        final cartJson = jsonEncode(_cart.map((c) => c.toJson()).toList());
-        await prefs.setString(key, cartJson);
-      }
+      final prefs = await SharedPreferences.getInstance();
+      const key = 'cart';
+      final cartJson = jsonEncode(_cart.map((c) => c.toJson()).toList());
+      await prefs.setString(key, cartJson);
     } catch (e) {
       debugPrint('Error saving cart: $e');
     }
@@ -202,32 +170,29 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _loadCart() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        final prefs = await SharedPreferences.getInstance();
-        final key = 'cart_${user.id}';
-        final cartString = prefs.getString(key);
-        if (cartString != null) {
-          final decoded = jsonDecode(cartString) as List;
-          _cart.clear();
-          for (final item in decoded) {
-            final cartItem = CartItem.fromJson(item as Map<String, dynamic>);
-            // Verify the item still exists in the menu catalogue
-            final menuIndex = _menuItems.indexWhere(
-              (m) => m.id == cartItem.menuItem.id,
+      final prefs = await SharedPreferences.getInstance();
+      const key = 'cart';
+      final cartString = prefs.getString(key);
+      if (cartString != null) {
+        final decoded = jsonDecode(cartString) as List;
+        _cart.clear();
+        for (final item in decoded) {
+          final cartItem = CartItem.fromJson(item as Map<String, dynamic>);
+          // Verify the item still exists in the menu catalogue
+          final menuIndex = _menuItems.indexWhere(
+            (m) => m.id == cartItem.menuItem.id,
+          );
+          if (menuIndex >= 0) {
+            _cart.add(
+              CartItem(
+                menuItem: _menuItems[menuIndex],
+                quantity: cartItem.quantity,
+              ),
             );
-            if (menuIndex >= 0) {
-              _cart.add(
-                CartItem(
-                  menuItem: _menuItems[menuIndex],
-                  quantity: cartItem.quantity,
-                ),
-              );
-            }
           }
-          notifyListeners();
-          _refreshCartRecommendations();
         }
+        notifyListeners();
+        _refreshCartRecommendations();
       }
     } catch (e) {
       debugPrint('Error loading cart: $e');
@@ -236,13 +201,10 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _saveOrders() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        final prefs = await SharedPreferences.getInstance();
-        final key = 'orders_${user.id}';
-        final ordersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
-        await prefs.setString(key, ordersJson);
-      }
+      final prefs = await SharedPreferences.getInstance();
+      const key = 'orders';
+      final ordersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
+      await prefs.setString(key, ordersJson);
     } catch (e) {
       debugPrint('Error saving local orders: $e');
     }
@@ -250,23 +212,20 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _loadOrders() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        final prefs = await SharedPreferences.getInstance();
-        final key = 'orders_${user.id}';
-        final ordersString = prefs.getString(key);
-        if (ordersString != null) {
-          final decoded = jsonDecode(ordersString) as List;
-          final localOrders = decoded
-              .map((item) => Order.fromJson(item as Map<String, dynamic>))
-              .toList();
+      final prefs = await SharedPreferences.getInstance();
+      const key = 'orders';
+      final ordersString = prefs.getString(key);
+      if (ordersString != null) {
+        final decoded = jsonDecode(ordersString) as List;
+        final localOrders = decoded
+            .map((item) => Order.fromJson(item as Map<String, dynamic>))
+            .toList();
 
-          // Merge with existing (if Supabase succeeded, we don't want to overwrite with old local data)
-          // But if Supabase failed, _orders is empty, so we just use local.
-          if (_orders.isEmpty) {
-            _orders.addAll(localOrders);
-            notifyListeners();
-          }
+        // Merge with existing (if Supabase succeeded, we don't want to overwrite with old local data)
+        // But if Supabase failed, _orders is empty, so we just use local.
+        if (_orders.isEmpty) {
+          _orders.addAll(localOrders);
+          notifyListeners();
         }
       }
     } catch (e) {
@@ -274,26 +233,19 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  /// Load personalized recommendations for the current user.
+  /// Load personalized recommendations.
   Future<void> _loadRecommendations() async {
     _isLoadingRecommendations = true;
     notifyListeners();
 
     try {
-      final customerId = _supabase.auth.currentUser?.id;
       _recommendedItems = await _recommendationService.getRecommendations(
-        customerId: customerId,
+        customerId: null,
         cartItemIds: [],
         allMenuItems: _menuItems,
       );
-
-      if (customerId != null) {
-        _customerBehaviour = await _recommendationService.getCustomerBehaviour(
-          customerId,
-        );
-      }
     } catch (e) {
-      debugPrint('Error loading recommendations: \$e');
+      debugPrint('Error loading recommendations: $e');
     } finally {
       _isLoadingRecommendations = false;
       notifyListeners();
@@ -308,10 +260,9 @@ class AppProvider with ChangeNotifier {
       return;
     }
     try {
-      final customerId = _supabase.auth.currentUser?.id;
       final cartIds = _cart.map((c) => c.menuItem.id).toList();
       _cartRecommendations = await _recommendationService.getRecommendations(
-        customerId: customerId,
+        customerId: null,
         cartItemIds: cartIds,
         allMenuItems: _menuItems,
         limit: 5,
@@ -892,19 +843,9 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _saveFavourites() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        final favIds = _menuItems.where((i) => i.isFavourite).map((i) => i.id).toList();
-        
-        // Save locally for instant offline access
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('favs_${user.id}', jsonEncode(favIds));
-        
-        // Sync permanently to Supabase database (user metadata)
-        final currentMeta = Map<String, dynamic>.from(user.userMetadata ?? {});
-        currentMeta['favourites'] = favIds;
-        await _supabase.auth.updateUser(UserAttributes(data: currentMeta));
-      }
+      final favIds = _menuItems.where((i) => i.isFavourite).map((i) => i.id).toList();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('favs', jsonEncode(favIds));
     } catch (e) {
       debugPrint('Error saving favourites: $e');
     }
@@ -912,24 +853,10 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _loadFavourites() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        List<String> favIds = [];
-
-        // 1. Try pulling from permanent Supabase metadata first
-        final metaFavs = user.userMetadata?['favourites'];
-        if (metaFavs != null && metaFavs is List) {
-          favIds = metaFavs.map((e) => e.toString()).toList();
-        } else {
-          // 2. Fallback to local SharedPreferences if metadata is empty
-          final prefs = await SharedPreferences.getInstance();
-          final favString = prefs.getString('favs_${user.id}');
-          if (favString != null) {
-            favIds = List<String>.from(jsonDecode(favString));
-          }
-        }
-
-        // Apply to menu items
+      final prefs = await SharedPreferences.getInstance();
+      final favString = prefs.getString('favs');
+      if (favString != null) {
+        final favIds = List<String>.from(jsonDecode(favString));
         if (favIds.isNotEmpty) {
           for (var item in _menuItems) {
             item.isFavourite = favIds.contains(item.id);
@@ -1007,7 +934,7 @@ class AppProvider with ChangeNotifier {
   Future<bool> placeOrder() async {
     if (_cart.isEmpty) return false;
 
-    final customerId = _supabase.auth.currentUser?.id;
+    const String? customerId = null;
     final cartSnapshot = List<CartItem>.from(_cart);
     final total = cartTotal;
     final now = DateTime.now();

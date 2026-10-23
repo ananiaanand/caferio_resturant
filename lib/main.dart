@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'auth_gate.dart';
 import 'providers/app_provider.dart';
+import 'screens/main_layout.dart';
 import 'utils/theme.dart';
 
 Future<void> main() async {
@@ -13,9 +13,6 @@ Future<void> main() async {
     url: 'https://rpuzznremhzsrwgzpggk.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwdXp6bnJlbWh6c3J3Z3pwZ2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjA1ODYsImV4cCI6MjA3MjQ5NjU4Nn0.sSi9oYbhkyn3uXnd8twbUa-wH99ySvSkCPCS45J_Be8',
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.implicit,
-    ),
   );
 
   runApp(
@@ -35,7 +32,7 @@ class CaferioApp extends StatelessWidget {
       title: 'Caferio',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const AuthGate(),
+      home: const MainLayout(),
     );
   }
 }
