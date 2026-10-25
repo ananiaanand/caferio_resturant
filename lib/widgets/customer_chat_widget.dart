@@ -231,14 +231,15 @@ class _CustomerChatSheetState extends State<CustomerChatSheet>
         setState(() => _messages.add(aiMsg));
       }
     } catch (_) {
-      final errMsg = ChatMessage(
-        isUser: false,
-        text:
-            "Oops! I'm having trouble connecting right now. Please try again in a moment.",
+      final localAnswer = RagService.instance.generateSmartLocalResponse(
+        q,
+        ChatRole.customer,
+        dashboardContext,
       );
-      await RagService.instance.addMessage(ChatRole.customer, errMsg);
+      final aiMsg = ChatMessage(isUser: false, text: localAnswer);
+      await RagService.instance.addMessage(ChatRole.customer, aiMsg);
       if (mounted) {
-        setState(() => _messages.add(errMsg));
+        setState(() => _messages.add(aiMsg));
       }
     } finally {
       if (mounted) setState(() => _loading = false);

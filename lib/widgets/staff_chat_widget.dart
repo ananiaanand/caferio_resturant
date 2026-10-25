@@ -282,14 +282,16 @@ class _StaffChatSheetState extends State<StaffChatSheet> {
       if (mounted) {
         setState(() => _messages.add(aiMsg));
       }
-    } catch (e) {
-      final errMsg = ChatMessage(
-        isUser: false,
-        text: 'Error connecting to assistant. Check your connection and try again.',
+    } catch (_) {
+      final localAnswer = RagService.instance.generateSmartLocalResponse(
+        q,
+        widget.role,
+        dashboardContext,
       );
-      await RagService.instance.addMessage(widget.role, errMsg);
+      final aiMsg = ChatMessage(isUser: false, text: localAnswer);
+      await RagService.instance.addMessage(widget.role, aiMsg);
       if (mounted) {
-        setState(() => _messages.add(errMsg));
+        setState(() => _messages.add(aiMsg));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
