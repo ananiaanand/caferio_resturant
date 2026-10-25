@@ -3,17 +3,47 @@ import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
 import 'package:caferio/utils/theme.dart';
 import 'package:caferio/models/menu_item.dart';
-import 'package:caferio/models/inventory_item.dart';
 import 'package:caferio/screens/recommendations_section.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(
+      text: context.read<AppProvider>().searchQuery,
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+
+    // Keep controller in sync if search query changed externally
+    if (_searchController.text != provider.searchQuery) {
+      _searchController.value = TextEditingValue(
+        text: provider.searchQuery,
+        selection: TextSelection.collapsed(offset: provider.searchQuery.length),
+      );
+    }
+
+    final isSearching = provider.searchQuery.trim().isNotEmpty;
+    final categoryItems = provider.currentCategoryItems;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -59,7 +89,7 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // Search Bar Placeholder
+            // Search Bar
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -70,13 +100,27 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
               child: TextField(
-                onChanged: (value) => context.read<AppProvider>().setSearchQuery(value),
-                decoration: const InputDecoration(
+                controller: _searchController,
+                onChanged: (value) {
+                  provider.setSearchQuery(value);
+                  setState(() {});
+                },
+                decoration: InputDecoration(
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
-                  hintText: 'Search for food...',
-                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Search food, drinks, ingredients...',
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.primaryColor),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.grey),
+                          onPressed: () {
+                            _searchController.clear();
+                            provider.clearSearch();
+                            setState(() {});
+                          },
+                        )
+                      : null,
                   fillColor: Colors.transparent,
                 ),
               ),
@@ -117,16 +161,10 @@ class DashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // Personalized Recommendations
-            if (provider.selectedCategory == 'All') ...[
+            // Personalized Recommendations & Top Picks (only when not searching)
+            if (!isSearching && provider.selectedCategory == 'All') ...[
               const RecommendationsSection(),
               const SizedBox(height: 32),
-            ],
-
-            // Dynamic Category Items Header & Sections
-            if (provider.selectedCategory == 'All') ...[
-
-              
               Text('Top Picks', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 22)),
               const SizedBox(height: 16),
               SizedBox(
@@ -137,56 +175,107 @@ class DashboardScreen extends StatelessWidget {
                   itemBuilder: (context, index) => Container(
                     width: 170, 
                     margin: const EdgeInsets.only(right: 16), 
-                    child: _buildMenuItemCard(context, provider.topPicks[index], provider)
+                    child: _buildMenuItemCard(context, provider.topPicks[index], provider),
                   ),
                 ),
               ),
               const SizedBox(height: 32),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('All Dishes', style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 22)),
-                  Text('${provider.currentCategoryItems.length} items', style: const TextStyle(color: AppTheme.textLight)),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ] else ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    provider.selectedCategory,
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 22),
-                  ),
-                  Text('${provider.currentCategoryItems.length} items', style: const TextStyle(color: AppTheme.textLight)),
-                ],
-              ),
-              const SizedBox(height: 16),
             ],
-            
-            // Items Grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: MediaQuery.of(context).size.width < 600
-                  ? const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    )
-                  : const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 220, // slightly larger so they look more proportional
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-              itemCount: provider.currentCategoryItems.length,
-              itemBuilder: (context, index) {
-                return _buildMenuItemCard(context, provider.currentCategoryItems[index], provider);
-              },
+
+            // Section Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    isSearching
+                        ? 'Results for "${provider.searchQuery.trim()}"'
+                        : (provider.selectedCategory == 'All' ? 'All Dishes' : provider.selectedCategory),
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 22),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  '${categoryItems.length} items',
+                  style: TextStyle(
+                    color: isSearching ? AppTheme.primaryColor : AppTheme.textLight,
+                    fontWeight: isSearching ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 16),
+            
+            // Empty State or Items Grid
+            if (categoryItems.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      isSearching ? Icons.search_off_rounded : Icons.restaurant_menu,
+                      size: 64,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      isSearching ? 'No dishes found' : 'No items available',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      isSearching
+                          ? 'We couldn\'t find any food matching "${provider.searchQuery.trim()}". Try searching with another dish or ingredient.'
+                          : 'There are currently no items in this category.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                    ),
+                    if (isSearching) ...[
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          _searchController.clear();
+                          provider.clearSearch();
+                          setState(() {});
+                        },
+                        icon: const Icon(Icons.clear, size: 18),
+                        label: const Text('Clear Search'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              )
+            else
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: MediaQuery.of(context).size.width < 600
+                    ? const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.75,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      )
+                    : const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 220,
+                        childAspectRatio: 0.75,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                itemCount: categoryItems.length,
+                itemBuilder: (context, index) {
+                  return _buildMenuItemCard(context, categoryItems[index], provider);
+                },
+              ),
             const SizedBox(height: 24),
           ],
         ),

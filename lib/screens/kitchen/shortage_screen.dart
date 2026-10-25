@@ -97,7 +97,7 @@ class ShortageScreen extends StatelessWidget {
                   )
                 ],
               ),
-              child: provider.groupedInventoryItems.length == 0 
+              child: provider.groupedInventoryItems.isEmpty 
               ? const Center(child: Text("No items found", style: TextStyle(color: Colors.grey)))
               : ListView.builder(
                 itemCount: provider.groupedInventoryItems.length,
@@ -193,7 +193,7 @@ class ShortageScreen extends StatelessWidget {
                                   onChanged: (val) {
                                     provider.toggleInventoryStock(item.id);
                                   },
-                                  activeColor: Colors.green,
+                                  activeThumbColor: Colors.green,
                                   inactiveThumbColor: Colors.red,
                                   inactiveTrackColor: Colors.red.withValues(alpha: 0.3),
                                 ),

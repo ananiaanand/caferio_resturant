@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print, deprecated_member_use
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';

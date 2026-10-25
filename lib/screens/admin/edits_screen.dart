@@ -127,7 +127,7 @@ class EditsScreen extends StatelessWidget {
                                 fit: BoxFit.scaleDown,
                                 child: Switch(
                                   value: !item.isOutOfStock,
-                                  activeColor: Colors.green,
+                                  activeThumbColor: Colors.green,
                                   onChanged: (value) {
                                     provider.toggleItemStock(item.id);
                                   },

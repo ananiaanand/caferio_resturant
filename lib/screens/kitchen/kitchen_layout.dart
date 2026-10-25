@@ -4,6 +4,7 @@ import 'pending_orders_screen.dart';
 import 'completed_orders_screen.dart';
 import 'shortage_screen.dart';
 import 'kitchen_profile_screen.dart';
+import 'package:caferio/widgets/staff_chat_widget.dart';
 
 class KitchenLayout extends StatefulWidget {
   const KitchenLayout({super.key});
@@ -111,6 +112,7 @@ class _KitchenLayoutState extends State<KitchenLayout> {
       // Desktop / Tablet: Persistent sidebar
       return Scaffold(
         backgroundColor: AppTheme.backgroundColor,
+        floatingActionButton: const StaffChatFab(role: ChatRole.chef),
         body: Row(
           children: [
             SizedBox(
@@ -129,6 +131,7 @@ class _KitchenLayoutState extends State<KitchenLayout> {
       // Mobile: Hamburger + Drawer
       return Scaffold(
         backgroundColor: AppTheme.backgroundColor,
+        floatingActionButton: const StaffChatFab(role: ChatRole.chef),
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 1,

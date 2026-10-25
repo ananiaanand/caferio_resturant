@@ -764,7 +764,15 @@ class AppProvider with ChangeNotifier {
   String get searchQuery => _searchQuery;
 
   void setSearchQuery(String query) {
+    if (_searchQuery.isEmpty && query.trim().isNotEmpty && _selectedCategory != 'All') {
+      _selectedCategory = 'All';
+    }
     _searchQuery = query;
+    notifyListeners();
+  }
+
+  void clearSearch() {
+    _searchQuery = '';
     notifyListeners();
   }
 
@@ -773,10 +781,8 @@ class AppProvider with ChangeNotifier {
   List<MenuItem> get currentCategoryItems {
     List<MenuItem> items;
     if (_selectedCategory == 'All') {
-      if (_shuffledAllItems == null) {
-        _shuffledAllItems = List<MenuItem>.from(_menuItems)
-          ..shuffle(Random(42));
-      }
+      _shuffledAllItems ??= List<MenuItem>.from(_menuItems)
+        ..shuffle(Random(42));
       items = _shuffledAllItems!;
     } else {
       items = _menuItems
@@ -784,11 +790,17 @@ class AppProvider with ChangeNotifier {
           .toList();
     }
 
-    if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      items = items
-          .where((item) => item.name.toLowerCase().contains(query))
-          .toList();
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isNotEmpty) {
+      items = items.where((item) {
+        final matchName = item.name.toLowerCase().contains(query);
+        final matchDesc = item.description.toLowerCase().contains(query);
+        final matchCategory = item.category.toLowerCase().contains(query);
+        final matchIngredients = item.ingredients.any(
+          (ing) => ing.toLowerCase().contains(query),
+        );
+        return matchName || matchDesc || matchCategory || matchIngredients;
+      }).toList();
     }
 
     return items;
@@ -946,7 +958,7 @@ class AppProvider with ChangeNotifier {
       final orderPayload = <String, dynamic>{
         'status': 'received',
         'total_amount': total,
-        if (customerId != null) 'customer_id': customerId,
+        'customer_id': ?customerId,
       };
 
       final response = await _supabase

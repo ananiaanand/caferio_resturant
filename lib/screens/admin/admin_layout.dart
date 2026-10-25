@@ -4,6 +4,7 @@ import 'package:caferio/screens/admin/sales_screen.dart';
 import 'package:caferio/screens/admin/edits_screen.dart';
 import 'package:caferio/screens/kitchen/shortage_screen.dart';
 import 'package:caferio/screens/admin/admin_profile_screen.dart';
+import 'package:caferio/widgets/staff_chat_widget.dart';
 
 class AdminLayout extends StatefulWidget {
   const AdminLayout({super.key});
@@ -112,6 +113,7 @@ class _AdminLayoutState extends State<AdminLayout> {
       // Desktop / Tablet: Persistent sidebar
       return Scaffold(
         backgroundColor: AppTheme.backgroundColor,
+        floatingActionButton: const StaffChatFab(role: ChatRole.admin),
         body: Row(
           children: [
             SizedBox(
@@ -130,6 +132,7 @@ class _AdminLayoutState extends State<AdminLayout> {
       // Mobile: Hamburger + Drawer
       return Scaffold(
         backgroundColor: AppTheme.backgroundColor,
+        floatingActionButton: const StaffChatFab(role: ChatRole.admin),
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 1,

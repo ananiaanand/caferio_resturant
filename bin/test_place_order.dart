@@ -1,3 +1,4 @@
+// ignore_for_file: depend_on_referenced_packages, avoid_print, unused_local_variable
 import 'package:supabase/supabase.dart';
 
 void main() async {
@@ -12,12 +13,12 @@ void main() async {
       password: 'admin',
     );
     final customerId = response.user?.id;
-    print('User ID: \');
+    print('User ID: $customerId');
 
     final orderPayload = <String, dynamic>{
       'status': 'received',
       'total_amount': 100,
-      if (customerId != null) 'customer_id': customerId,
+      'customer_id': ?customerId,
     };
 
     final orderResponse = await supabase
@@ -25,8 +26,8 @@ void main() async {
           .insert(orderPayload)
           .select('id')
           .maybeSingle();
-    print('Order inserted: \');
+    print('Order inserted: $orderResponse');
   } catch (e) {
-    print('ERROR: \');
+    print('ERROR: $e');
   }
 }

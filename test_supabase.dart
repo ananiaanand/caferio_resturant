@@ -1,3 +1,4 @@
+// ignore_for_file: depend_on_referenced_packages, avoid_print, prefer_interpolation_to_compose_strings
 import 'package:supabase/supabase.dart';
 import 'package:caferio/models/order.dart';
 

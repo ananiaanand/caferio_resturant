@@ -6,6 +6,7 @@ import 'dashboard_screen.dart';
 import 'cart_screen.dart';
 import 'track_order_screen.dart';
 import 'profile_screen.dart';
+import 'package:caferio/widgets/customer_chat_widget.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -36,6 +37,7 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: const CustomerChatFab(),
       body: _screens[_currentIndex],
       bottomNavigationBar: Consumer<AppProvider>(
         builder: (context, provider, child) {

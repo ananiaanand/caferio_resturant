@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:caferio/providers/app_provider.dart';
 import 'package:caferio/utils/theme.dart';
 import 'package:caferio/models/customer_behaviour.dart';
+import 'package:caferio/Authentication/auth_service.dart';
+import 'package:caferio/Authentication/profile_security_card.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -11,6 +13,15 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final favourites = provider.favouriteItems;
+
+    final isGuest = !AuthService.instance.isAuthenticated || AuthService.instance.isGuest;
+    final username = AuthService.instance.currentUsername;
+    final displayName = !isGuest && username != null && username.isNotEmpty
+        ? '@$username'
+        : 'Guest User';
+    final subtitle = !isGuest
+        ? 'Verified Caferio Account'
+        : 'Browsing as Guest';
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -50,13 +61,13 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Guest',
+                    displayName,
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 26, color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Welcome to Caferio',
-                    style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -143,6 +154,10 @@ class ProfileScreen extends StatelessWidget {
                 return _buildTasteProfileCard(context, behaviour);
               },
             ),
+
+            // Security & Authentication Section
+            const SizedBox(height: 24),
+            const ProfileSecurityCard(),
 
             const SizedBox(height: 40),
           ],
