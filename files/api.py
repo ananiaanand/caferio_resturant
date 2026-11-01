@@ -6,12 +6,21 @@ Docs:  http://localhost:8000/docs
 """
 import pandas as pd
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from features import DATA_DIR, load_holidays, to_series
 from predict import load_bundle, predict_stockout
 
 app = FastAPI(title="Caferio Ingredient Stock-Out Prediction")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 bundle = load_bundle()
 holidays = load_holidays()
 
