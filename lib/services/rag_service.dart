@@ -134,6 +134,11 @@ class RagService {
     }
   }
 
+  /// Clears in-memory customer chat history when switching users or signing out.
+  void clearCustomerHistoryInMemory() {
+    _roleHistories[ChatRole.customer] = [];
+  }
+
   Future<void> _saveToStorage(ChatRole role) async {
     try {
       final prefs = await SharedPreferences.getInstance();

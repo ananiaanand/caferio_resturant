@@ -229,6 +229,73 @@ void main() {
       // Clean up
       await AuthService.instance.signOut();
     });
+
+    test('Strict Cart Isolation: Dishes in cart remain private to each account and never leak', () async {
+      // 1. User Alpha signs up and adds 2 specific dishes to cart
+      await AuthService.instance.signOut();
+      await AuthService.instance.signUp(username: 'user_alpha', password: 'alpha_password_1');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      final dish1 = provider.menuItems[0];
+      final dish2 = provider.menuItems[1];
+      provider.addToCart(dish1);
+      provider.addToCart(dish2);
+      expect(provider.cart.length, 2);
+      expect(provider.cart.any((c) => c.menuItem.id == dish1.id), true);
+      expect(provider.cart.any((c) => c.menuItem.id == dish2.id), true);
+
+      // 2. User Alpha signs out
+      await AuthService.instance.signOut();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // As guest, cart is wiped
+      expect(provider.cart.isEmpty, true);
+
+      // 3. User Beta signs up
+      await AuthService.instance.signUp(username: 'user_beta', password: 'beta_password_2');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // User Beta CANNOT see User Alpha's cart dishes!
+      expect(provider.cart.isEmpty, true);
+      expect(provider.cart.any((c) => c.menuItem.id == dish1.id), false);
+      expect(provider.cart.any((c) => c.menuItem.id == dish2.id), false);
+
+      // 4. User Beta adds a completely different dish (dish 3) to cart
+      final dish3 = provider.menuItems[2];
+      provider.addToCart(dish3);
+      expect(provider.cart.length, 1);
+      expect(provider.cart.first.menuItem.id, dish3.id);
+
+      // 5. User Beta signs out
+      await AuthService.instance.signOut();
+      await Future.delayed(const Duration(milliseconds: 100));
+      expect(provider.cart.isEmpty, true);
+
+      // 6. User Alpha signs back in
+      await AuthService.instance.signIn(username: 'user_alpha', password: 'alpha_password_1');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // User Alpha sees ONLY User Alpha's original 2 dishes, and zero items from User Beta
+      expect(provider.cart.length, 2);
+      expect(provider.cart.any((c) => c.menuItem.id == dish1.id), true);
+      expect(provider.cart.any((c) => c.menuItem.id == dish2.id), true);
+      expect(provider.cart.any((c) => c.menuItem.id == dish3.id), false);
+
+      // 7. User Alpha signs out and User Beta logs back in
+      await AuthService.instance.signOut();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      await AuthService.instance.signIn(username: 'user_beta', password: 'beta_password_2');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // User Beta sees ONLY dish3, never dishes from User Alpha
+      expect(provider.cart.length, 1);
+      expect(provider.cart.first.menuItem.id, dish3.id);
+      expect(provider.cart.any((c) => c.menuItem.id == dish1.id), false);
+
+      // Clean up
+      await AuthService.instance.signOut();
+    });
   });
 }
 

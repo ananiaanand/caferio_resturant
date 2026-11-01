@@ -37,6 +37,13 @@ class SupabaseRecommendationService implements RecommendationEngine {
   SupabaseRecommendationService({SupabaseClient? client})
       : _supabase = client ?? Supabase.instance.client;
 
+  /// Clear in-memory caches to prevent recommendation or taste profile leakage between accounts
+  void clearCache() {
+    _cachedRecommendations = null;
+    _lastCachedCustomerId = null;
+    _cachedBehaviour = null;
+  }
+
   @override
   Future<List<RecommendationItem>> getRecommendations({
     String? customerId,

@@ -692,6 +692,10 @@ class AuthService {
 
     await _clearSecureSession();
 
+    try {
+      await AppProvider.instance?.onUserSignedOut();
+    } catch (_) {}
+
     _localAuthStreamController.add(
       const AuthState(AuthChangeEvent.signedOut, null),
     );
@@ -758,6 +762,10 @@ class AuthService {
         await AppProvider.instance?.deleteUserDataFor(username, userId);
       } catch (_) {}
     }
+
+    try {
+      await AppProvider.instance?.onUserSignedOut();
+    } catch (_) {}
 
     // 5. Clear all stored session tokens
     _isGuest = false;

@@ -13,6 +13,7 @@ import '../models/customer_behaviour.dart';
 import '../services/recommendation_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Authentication/auth_service.dart';
+import '../services/rag_service.dart';
 
 class AppProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
@@ -67,18 +68,51 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _onAuthChanged() async {
     final newKey = activeUserKey;
-    if (_currentUserKey != newKey) {
-      _currentUserKey = newKey;
-      _cart.clear();
-      _orders.clear();
-      _cartRecommendations = [];
-      _customerBehaviour = null;
+    _currentUserKey = newKey;
+
+    // 1. Wipe in-memory state cleanly
+    _cart.clear();
+    _orders.clear();
+    _cartRecommendations = [];
+    _customerBehaviour = null;
+    for (var item in _menuItems) {
+      item.isFavourite = false;
+    }
+    RagService.instance.clearCustomerHistoryInMemory();
+    _recommendationService.clearCache();
+
+    // 2. Load strictly user-scoped data if an account is authenticated
+    if (newKey != 'guest') {
       await _loadCart();
       await _loadFavourites();
       await _loadOrders();
       await _loadRecommendations();
-      notifyListeners();
     }
+    notifyListeners();
+  }
+
+  /// Cleanly purge all in-memory and temporary guest data on user sign out.
+  Future<void> onUserSignedOut() async {
+    _currentUserKey = 'guest';
+    _cart.clear();
+    _orders.clear();
+    _cartRecommendations = [];
+    _customerBehaviour = null;
+    for (var item in _menuItems) {
+      item.isFavourite = false;
+    }
+    RagService.instance.clearCustomerHistoryInMemory();
+    _recommendationService.clearCache();
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('caferio_cart_guest');
+      await prefs.remove('caferio_favs_guest');
+      await prefs.remove('caferio_orders_guest');
+      await prefs.remove('caferio_chat_history_customer_guest');
+    } catch (_) {}
+
+    notifyListeners();
   }
 
   Future<void> fetchMLStockoutPredictions() async {
@@ -205,6 +239,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _saveCart() async {
     try {
+      _currentUserKey = activeUserKey;
       final prefs = await SharedPreferences.getInstance();
       final key = 'caferio_cart_$_currentUserKey';
       final cartJson = jsonEncode(_cart.map((c) => c.toJson()).toList());
@@ -216,6 +251,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _loadCart() async {
     try {
+      _currentUserKey = activeUserKey;
       final prefs = await SharedPreferences.getInstance();
       final key = 'caferio_cart_$_currentUserKey';
       final cartString = prefs.getString(key);
@@ -247,6 +283,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _saveOrders() async {
     try {
+      _currentUserKey = activeUserKey;
       final prefs = await SharedPreferences.getInstance();
       // 1. Maintain global restaurant orders (for kitchen/admin)
       final allOrdersString = prefs.getString('caferio_all_orders');
@@ -285,6 +322,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _loadOrders() async {
     try {
+      _currentUserKey = activeUserKey;
       final prefs = await SharedPreferences.getInstance();
       _orders.clear();
 
@@ -974,35 +1012,43 @@ class AppProvider with ChangeNotifier {
   /// Track Order and customer widgets ALWAYS only see orders placed by this current user!
   /// Staff dashboards (Kitchen & Admin) use [allOrders].
   List<Order> get orders {
-    return _orders.where((o) => _isOrderForCurrentUser(o)).toList();
+    try {
+      return _orders.where((o) => _isOrderForCurrentUser(o)).toList();
+    } catch (_) {
+      return <Order>[];
+    }
   }
 
   bool _isOrderForCurrentUser(Order order) {
-    final uid = AuthService.instance.currentUser?.id.trim().toLowerCase();
-    final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
-    final cid = order.customerId?.trim().toLowerCase();
+    try {
+      final uid = AuthService.instance.currentUser?.id.trim().toLowerCase();
+      final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
+      final cid = order.customerId?.trim().toLowerCase();
 
-    // If order has no customerId, it cannot belong to any account
-    if (cid == null || cid.isEmpty) return false;
+      // If order has no customerId, it cannot belong to any account
+      if (cid == null || cid.isEmpty) return false;
 
-    // If user is not authenticated: only matches if order was explicitly placed by guest
-    if (uname == null && uid == null) {
-      return AuthService.instance.isGuest && cid == 'guest';
+      // If user is not authenticated: only matches if order was explicitly placed by guest
+      if (uname == null && uid == null) {
+        return (AuthService.instance.isGuest || true) && cid == 'guest';
+      }
+
+      // Authenticated users NEVER match anonymous guest orders
+      if (cid == 'guest') return false;
+
+      // Strict exact match with user ID (UUID or usr_<username>)
+      if (uid != null && cid == uid) return true;
+
+      // Strict exact match with username
+      if (uname != null) {
+        if (cid == uname) return true;
+        if (cid == 'usr_$uname') return true;
+      }
+
+      return false;
+    } catch (_) {
+      return false;
     }
-
-    // Authenticated users NEVER match anonymous guest orders
-    if (cid == 'guest') return false;
-
-    // Strict exact match with user ID (UUID or usr_<username>)
-    if (uid != null && cid == uid) return true;
-
-    // Strict exact match with username
-    if (uname != null) {
-      if (cid == uname) return true;
-      if (cid == 'usr_$uname') return true;
-    }
-
-    return false;
   }
 
   void selectCategory(String category) {
@@ -1021,6 +1067,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _saveFavourites() async {
     try {
+      _currentUserKey = activeUserKey;
       final favIds = _menuItems.where((i) => i.isFavourite).map((i) => i.id).toList();
       final prefs = await SharedPreferences.getInstance();
       final key = 'caferio_favs_$_currentUserKey';
@@ -1032,6 +1079,7 @@ class AppProvider with ChangeNotifier {
 
   Future<void> _loadFavourites() async {
     try {
+      _currentUserKey = activeUserKey;
       for (var item in _menuItems) {
         item.isFavourite = false;
       }
@@ -1248,16 +1296,17 @@ class AppProvider with ChangeNotifier {
   /// Delete all data associated with a specific user (cart, orders, favourites, recommendations).
   Future<void> deleteUserDataFor(String username, String? userId) async {
     final clean = username.trim().toLowerCase();
+    _currentUserKey = 'guest';
     _cart.clear();
     _cartRecommendations = [];
     _customerBehaviour = null;
     _recommendedItems = [];
 
-    // Remove all orders belonging to this user
+    // Remove all orders belonging strictly to this user
     _orders.removeWhere((o) {
       final cid = o.customerId?.trim().toLowerCase();
       if (cid == null) return false;
-      if (cid == clean || cid == 'usr_$clean' || cid.startsWith('usr_${clean}_')) return true;
+      if (cid == clean || cid == 'usr_$clean') return true;
       if (userId != null && cid == userId.toLowerCase()) return true;
       return false;
     });
@@ -1267,12 +1316,18 @@ class AppProvider with ChangeNotifier {
       item.isFavourite = false;
     }
 
+    // Wipe in-memory caches and chat history
+    RagService.instance.clearCustomerHistoryInMemory();
+    _recommendationService.clearCache();
+
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('caferio_cart_$clean');
       await prefs.remove('caferio_favs_$clean');
       await prefs.remove('caferio_orders_$clean');
       await prefs.remove('caferio_chat_history_customer_$clean');
+      await prefs.remove('user_meta_$clean');
+      await prefs.remove('user_fullname_$clean');
       if (userId != null) {
         await prefs.remove('caferio_cart_$userId');
         await prefs.remove('caferio_favs_$userId');
