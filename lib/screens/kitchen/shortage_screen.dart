@@ -43,22 +43,26 @@ class ShortageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final isPhone = MediaQuery.of(context).size.width < 650;
 
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: isPhone ? 14.0 : 24.0,
+        vertical: isPhone ? 12.0 : 20.0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Shortage & Inventory',
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 32),
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: isPhone ? 22 : 32),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             'Mark dishes as Out of Stock to prevent new orders',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: isPhone ? 13 : 14),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: isPhone ? 16 : 32),
           
           // Search Bar
           Container(

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:caferio/providers/app_provider.dart';
+import 'package:caferio/models/order.dart';
 import 'package:caferio/utils/theme.dart';
 import 'pending_orders_screen.dart';
 import 'completed_orders_screen.dart';
@@ -107,6 +110,10 @@ class _KitchenLayoutState extends State<KitchenLayout> {
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width >= 700;
+    final provider = Provider.of<AppProvider>(context);
+    final pendingCount = provider.allOrders
+        .where((o) => o.status.index < OrderStatus.served.index)
+        .length;
 
     if (isWide) {
       // Desktop / Tablet: Persistent sidebar
@@ -128,7 +135,7 @@ class _KitchenLayoutState extends State<KitchenLayout> {
         ),
       );
     } else {
-      // Mobile: Hamburger + Drawer
+      // Mobile: Modern Bottom Navigation Bar with pending count badge + Drawer option
       return Scaffold(
         backgroundColor: AppTheme.backgroundColor,
         floatingActionButton: const StaffChatFab(role: ChatRole.chef),
@@ -150,12 +157,65 @@ class _KitchenLayoutState extends State<KitchenLayout> {
             ),
           ),
           centerTitle: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: AppTheme.primaryColor),
+              tooltip: 'Refresh Orders',
+              onPressed: () {
+                provider.refreshOrders();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Kitchen tickets refreshed'),
+                    duration: Duration(seconds: 1),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
         drawer: Drawer(
           backgroundColor: Colors.white,
           child: SafeArea(child: _buildSidebarContent()),
         ),
         body: _screens[_selectedIndex],
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+          backgroundColor: Colors.white,
+          elevation: 3,
+          destinations: [
+            NavigationDestination(
+              icon: Badge(
+                isLabelVisible: pendingCount > 0,
+                label: Text('$pendingCount'),
+                backgroundColor: AppTheme.primaryColor,
+                child: const Icon(Icons.pending_actions_outlined),
+              ),
+              selectedIcon: Badge(
+                isLabelVisible: pendingCount > 0,
+                label: Text('$pendingCount'),
+                backgroundColor: AppTheme.primaryColor,
+                child: const Icon(Icons.pending_actions),
+              ),
+              label: 'Pending',
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.inventory_2_outlined),
+              selectedIcon: Icon(Icons.inventory),
+              label: 'Shortage',
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.check_circle_outline),
+              selectedIcon: Icon(Icons.check_circle),
+              label: 'Completed',
+            ),
+            const NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+        ),
       );
     }
   }
