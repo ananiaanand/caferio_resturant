@@ -134,11 +134,12 @@ class _CustomerChatSheetState extends State<CustomerChatSheet>
 
     // 1. LIVE TRACK ORDER STATUS
     buffer.writeln('=== LIVE TRACK ORDER STATUS ===');
-    if (provider.orders.isEmpty) {
+    final customerOrders = provider.orders;
+    if (customerOrders.isEmpty) {
       buffer.writeln('Customer has placed no orders yet.');
     } else {
       final activeOrders =
-          provider.orders.where((o) => o.status != OrderStatus.served).toList();
+          customerOrders.where((o) => o.status != OrderStatus.served).toList();
       if (activeOrders.isNotEmpty) {
         buffer.writeln(
             'Active Orders currently in progress (${activeOrders.length}):');
@@ -158,7 +159,7 @@ class _CustomerChatSheetState extends State<CustomerChatSheet>
       }
 
       final servedOrders =
-          provider.orders.where((o) => o.status == OrderStatus.served).take(3);
+          customerOrders.where((o) => o.status == OrderStatus.served).take(3);
       if (servedOrders.isNotEmpty) {
         buffer.writeln('\nRecently Served Orders:');
         for (final order in servedOrders) {

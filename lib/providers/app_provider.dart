@@ -12,6 +12,7 @@ import '../models/recommendation.dart';
 import '../models/customer_behaviour.dart';
 import '../services/recommendation_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Authentication/auth_service.dart';
 
 class AppProvider with ChangeNotifier {
   final _supabase = Supabase.instance.client;
@@ -30,9 +31,53 @@ class AppProvider with ChangeNotifier {
   CustomerBehaviour? get customerBehaviour => _customerBehaviour;
   bool get isLoadingRecommendations => _isLoadingRecommendations;
 
+  static AppProvider? instance;
+  StreamSubscription<AuthState>? _authSubscription;
+  String _currentUserKey = 'guest';
+
+  String get activeUserKey {
+    final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
+    if (uname != null && uname.isNotEmpty) return uname;
+    final uid = AuthService.instance.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) return uid;
+    return 'guest';
+  }
+
   AppProvider() {
+    instance = this;
+    _currentUserKey = activeUserKey;
     _initSupabase();
     fetchMLStockoutPredictions();
+    _listenToAuthChanges();
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToAuthChanges() {
+    _authSubscription?.cancel();
+    _authSubscription =
+        AuthService.instance.onAuthStateChange.listen((_) {
+      _onAuthChanged();
+    });
+  }
+
+  Future<void> _onAuthChanged() async {
+    final newKey = activeUserKey;
+    if (_currentUserKey != newKey) {
+      _currentUserKey = newKey;
+      _cart.clear();
+      _cartRecommendations = [];
+      _customerBehaviour = null;
+      await _loadCart();
+      await _loadFavourites();
+      await _loadOrders();
+      await _loadRecommendations();
+      notifyListeners();
+    }
   }
 
   Future<void> fetchMLStockoutPredictions() async {
@@ -160,22 +205,22 @@ class AppProvider with ChangeNotifier {
   Future<void> _saveCart() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      const key = 'cart';
+      final key = 'caferio_cart_$_currentUserKey';
       final cartJson = jsonEncode(_cart.map((c) => c.toJson()).toList());
       await prefs.setString(key, cartJson);
     } catch (e) {
-      debugPrint('Error saving cart: $e');
+      debugPrint('Error saving cart for $_currentUserKey: $e');
     }
   }
 
   Future<void> _loadCart() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      const key = 'cart';
+      final key = 'caferio_cart_$_currentUserKey';
       final cartString = prefs.getString(key);
-      if (cartString != null) {
+      _cart.clear();
+      if (cartString != null && cartString.isNotEmpty) {
         final decoded = jsonDecode(cartString) as List;
-        _cart.clear();
         for (final item in decoded) {
           final cartItem = CartItem.fromJson(item as Map<String, dynamic>);
           // Verify the item still exists in the menu catalogue
@@ -191,20 +236,27 @@ class AppProvider with ChangeNotifier {
             );
           }
         }
-        notifyListeners();
-        _refreshCartRecommendations();
       }
+      notifyListeners();
+      _refreshCartRecommendations();
     } catch (e) {
-      debugPrint('Error loading cart: $e');
+      debugPrint('Error loading cart for $_currentUserKey: $e');
     }
   }
 
   Future<void> _saveOrders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      const key = 'orders';
-      final ordersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
-      await prefs.setString(key, ordersJson);
+      // 1. Save all restaurant orders (for kitchen/admin)
+      final allOrdersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
+      await prefs.setString('caferio_all_orders', allOrdersJson);
+
+      // 2. Save user-scoped orders
+      if (_currentUserKey != 'guest') {
+        final myOrders = _orders.where((o) => _isOrderForCurrentUser(o)).toList();
+        final userOrdersJson = jsonEncode(myOrders.map((o) => o.toJson()).toList());
+        await prefs.setString('caferio_orders_$_currentUserKey', userOrdersJson);
+      }
     } catch (e) {
       debugPrint('Error saving local orders: $e');
     }
@@ -213,37 +265,63 @@ class AppProvider with ChangeNotifier {
   Future<void> _loadOrders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      const key = 'orders';
-      final ordersString = prefs.getString(key);
-      if (ordersString != null) {
-        final decoded = jsonDecode(ordersString) as List;
-        final localOrders = decoded
+      // Load all restaurant orders
+      final allOrdersString = prefs.getString('caferio_all_orders');
+      if (allOrdersString != null && allOrdersString.isNotEmpty) {
+        final decoded = jsonDecode(allOrdersString) as List;
+        final localAll = decoded
             .map((item) => Order.fromJson(item as Map<String, dynamic>))
             .toList();
-
-        // Merge with existing (if Supabase succeeded, we don't want to overwrite with old local data)
-        // But if Supabase failed, _orders is empty, so we just use local.
-        if (_orders.isEmpty) {
-          _orders.addAll(localOrders);
-          notifyListeners();
+        for (final o in localAll) {
+          if (!_orders.any((existing) => existing.id == o.id)) {
+            _orders.add(o);
+          }
         }
       }
+
+      // Also merge any saved user orders if not already present
+      if (_currentUserKey != 'guest') {
+        final userOrdersString = prefs.getString('caferio_orders_$_currentUserKey');
+        if (userOrdersString != null && userOrdersString.isNotEmpty) {
+          final decoded = jsonDecode(userOrdersString) as List;
+          final localUserOrders = decoded
+              .map((item) => Order.fromJson(item as Map<String, dynamic>))
+              .toList();
+          for (final o in localUserOrders) {
+            if (!_orders.any((existing) => existing.id == o.id)) {
+              _orders.insert(0, o);
+            }
+          }
+        }
+      }
+      notifyListeners();
     } catch (e) {
       debugPrint('Error loading local orders: $e');
     }
   }
 
-  /// Load personalized recommendations.
+  /// Load personalized recommendations and user taste profile.
   Future<void> _loadRecommendations() async {
     _isLoadingRecommendations = true;
     notifyListeners();
 
     try {
+      final uid = AuthService.instance.currentUser?.id;
+      final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
+      final customerId = uid ?? (uname != null ? 'usr_$uname' : null);
+
       _recommendedItems = await _recommendationService.getRecommendations(
-        customerId: null,
-        cartItemIds: [],
+        customerId: customerId,
+        cartItemIds: _cart.map((c) => c.menuItem.id).toList(),
         allMenuItems: _menuItems,
       );
+
+      if (customerId != null) {
+        _customerBehaviour =
+            await _recommendationService.getCustomerBehaviour(customerId);
+      } else {
+        _customerBehaviour = null;
+      }
     } catch (e) {
       debugPrint('Error loading recommendations: $e');
     } finally {
@@ -261,15 +339,19 @@ class AppProvider with ChangeNotifier {
     }
     try {
       final cartIds = _cart.map((c) => c.menuItem.id).toList();
+      final uid = AuthService.instance.currentUser?.id;
+      final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
+      final customerId = uid ?? (uname != null ? 'usr_$uname' : null);
+
       _cartRecommendations = await _recommendationService.getRecommendations(
-        customerId: null,
+        customerId: customerId,
         cartItemIds: cartIds,
         allMenuItems: _menuItems,
         limit: 5,
       );
       notifyListeners();
     } catch (e) {
-      debugPrint('Error refreshing cart recommendations: \$e');
+      debugPrint('Error refreshing cart recommendations: $e');
     }
   }
 
@@ -336,7 +418,7 @@ class AppProvider with ChangeNotifier {
       }
 
       // Save successfully fetched Supabase orders locally so they persist across offline/login
-      _saveOrders();
+      await _saveOrders();
       notifyListeners();
     } catch (e) {
       debugPrint(
@@ -837,7 +919,34 @@ class AppProvider with ChangeNotifier {
 
   // Orders
   final List<Order> _orders = [];
-  List<Order> get orders => _orders;
+
+  /// All restaurant orders (used by Kitchen and Admin management).
+  List<Order> get allOrders => _orders;
+
+  /// User-scoped orders.
+  /// Admin and Chef see all orders.
+  /// Customers and Guests ONLY see orders they placed!
+  List<Order> get orders {
+    final role = AuthService.instance.currentRole;
+    if (role == 'admin' || role == 'chef' || role == 'kitchen') {
+      return _orders;
+    }
+    return _orders.where((o) => _isOrderForCurrentUser(o)).toList();
+  }
+
+  bool _isOrderForCurrentUser(Order order) {
+    final uid = AuthService.instance.currentUser?.id;
+    final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
+    final cid = order.customerId?.trim().toLowerCase();
+    if (cid == null) return false;
+    if (uid != null && cid == uid.toLowerCase()) return true;
+    if (uname != null) {
+      if (cid == uname) return true;
+      if (cid == 'usr_$uname') return true;
+      if (cid.startsWith('usr_${uname}_')) return true;
+    }
+    return false;
+  }
 
   void selectCategory(String category) {
     _selectedCategory = category;
@@ -857,27 +966,32 @@ class AppProvider with ChangeNotifier {
     try {
       final favIds = _menuItems.where((i) => i.isFavourite).map((i) => i.id).toList();
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('favs', jsonEncode(favIds));
+      final key = 'caferio_favs_$_currentUserKey';
+      await prefs.setString(key, jsonEncode(favIds));
     } catch (e) {
-      debugPrint('Error saving favourites: $e');
+      debugPrint('Error saving favourites for $_currentUserKey: $e');
     }
   }
 
   Future<void> _loadFavourites() async {
     try {
+      for (var item in _menuItems) {
+        item.isFavourite = false;
+      }
       final prefs = await SharedPreferences.getInstance();
-      final favString = prefs.getString('favs');
-      if (favString != null) {
+      final key = 'caferio_favs_$_currentUserKey';
+      final favString = prefs.getString(key);
+      if (favString != null && favString.isNotEmpty) {
         final favIds = List<String>.from(jsonDecode(favString));
         if (favIds.isNotEmpty) {
           for (var item in _menuItems) {
             item.isFavourite = favIds.contains(item.id);
           }
-          notifyListeners();
         }
       }
+      notifyListeners();
     } catch (e) {
-      debugPrint('Error loading favourites: $e');
+      debugPrint('Error loading favourites for $_currentUserKey: $e');
     }
   }
 
@@ -940,13 +1054,16 @@ class AppProvider with ChangeNotifier {
   }
 
   /// Places an order.
+  /// Associates the order with the logged-in customer's ID / username.
   /// Strategy: try Supabase first; if it fails for any reason
   /// (DB paused, missing column, RLS, no network), fall back to
   /// a local in-memory order so the cart→track flow always works.
   Future<bool> placeOrder() async {
     if (_cart.isEmpty) return false;
 
-    const String? customerId = null;
+    final uid = AuthService.instance.currentUser?.id;
+    final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
+    final customerId = uid ?? (uname != null ? 'usr_$uname' : 'guest');
     final cartSnapshot = List<CartItem>.from(_cart);
     final total = cartTotal;
     final now = DateTime.now();
@@ -958,7 +1075,7 @@ class AppProvider with ChangeNotifier {
       final orderPayload = <String, dynamic>{
         'status': 'received',
         'total_amount': total,
-        'customer_id': ?customerId,
+        'customer_id': customerId,
       };
 
       final response = await _supabase
@@ -999,7 +1116,7 @@ class AppProvider with ChangeNotifier {
       orderId = 'local_${now.millisecondsSinceEpoch}';
     }
 
-    // Always add the order to local state immediately
+    // Always add the order to all orders immediately
     _orders.insert(
       0,
       Order(
@@ -1051,7 +1168,7 @@ class AppProvider with ChangeNotifier {
               : order.servedAt,
           status: newStatus,
         );
-        _saveOrders();
+        await _saveOrders();
         notifyListeners();
 
         // Sync to Supabase (best-effort — local ID orders won't sync)
@@ -1069,6 +1186,46 @@ class AppProvider with ChangeNotifier {
         }
       }
     }
+  }
+
+  /// Delete all data associated with a specific user (cart, orders, favourites, recommendations).
+  Future<void> deleteUserDataFor(String username, String? userId) async {
+    final clean = username.trim().toLowerCase();
+    _cart.clear();
+    _cartRecommendations = [];
+    _customerBehaviour = null;
+    _recommendedItems = [];
+
+    // Remove all orders belonging to this user
+    _orders.removeWhere((o) {
+      final cid = o.customerId?.trim().toLowerCase();
+      if (cid == null) return false;
+      if (cid == clean || cid == 'usr_$clean' || cid.startsWith('usr_${clean}_')) return true;
+      if (userId != null && cid == userId.toLowerCase()) return true;
+      return false;
+    });
+
+    // Reset favourites on all menu items
+    for (var item in _menuItems) {
+      item.isFavourite = false;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('caferio_cart_$clean');
+      await prefs.remove('caferio_favs_$clean');
+      await prefs.remove('caferio_orders_$clean');
+      await prefs.remove('caferio_chat_history_customer_$clean');
+      if (userId != null) {
+        await prefs.remove('caferio_cart_$userId');
+        await prefs.remove('caferio_favs_$userId');
+        await prefs.remove('caferio_orders_$userId');
+      }
+      final allOrdersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
+      await prefs.setString('caferio_all_orders', allOrdersJson);
+    } catch (_) {}
+
+    notifyListeners();
   }
 
   // --- Inventory Items for Kitchen Shortage ---

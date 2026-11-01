@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../Authentication/auth_service.dart';
 
 /// Represents a single chat turn (user or model).
 class ChatMessage {
@@ -77,16 +78,23 @@ class RagService {
     ChatRole.chef: [],
     ChatRole.admin: [],
   };
-  bool _loadedFromPrefs = false;
+
+  String _storageKeyForRole(ChatRole role) {
+    if (role == ChatRole.customer) {
+      final uname =
+          AuthService.instance.currentUsername?.trim().toLowerCase() ?? 'guest';
+      return 'caferio_chat_history_customer_$uname';
+    }
+    return 'caferio_chat_history_${role.name}';
+  }
 
   /// Loads stored messages from local device storage so chat history persists
   /// when closing and re-opening the sheet.
   Future<void> initStorage() async {
-    if (_loadedFromPrefs) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       for (final role in ChatRole.values) {
-        final key = 'caferio_chat_history_${role.name}';
+        final key = _storageKeyForRole(role);
         final raw = prefs.getString(key);
         if (raw != null) {
           final list = jsonDecode(raw) as List;
@@ -94,9 +102,10 @@ class RagService {
               .map((item) =>
                   ChatMessage.fromJson(item as Map<String, dynamic>))
               .toList();
+        } else if (role == ChatRole.customer) {
+          _roleHistories[role] = [];
         }
       }
-      _loadedFromPrefs = true;
     } catch (e) {
       debugPrint('Error loading chat history from storage: $e');
     }
@@ -119,7 +128,7 @@ class RagService {
     _roleHistories[role]?.clear();
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('caferio_chat_history_${role.name}');
+      await prefs.remove(_storageKeyForRole(role));
     } catch (e) {
       debugPrint('Error clearing chat history: $e');
     }
@@ -128,7 +137,7 @@ class RagService {
   Future<void> _saveToStorage(ChatRole role) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final key = 'caferio_chat_history_${role.name}';
+      final key = _storageKeyForRole(role);
       final list = _roleHistories[role] ?? [];
       // Keep up to 60 messages to keep storage fast & snappy
       final toSave = list.length > 60 ? list.sublist(list.length - 60) : list;

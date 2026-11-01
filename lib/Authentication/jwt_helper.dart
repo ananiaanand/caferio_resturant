@@ -102,7 +102,7 @@ class JwtClaims {
             ? 'admin'
             : (clean == 'chef' || clean == 'kitchen' ? 'chef' : 'customer'));
     final payloadMap = {
-      'sub': 'usr_${clean}_${DateTime.now().millisecondsSinceEpoch}',
+      'sub': 'usr_$clean',
       'email': email ?? '$clean@myapp.app',
       'role': resolvedRole,
       'aal': 'aal1',

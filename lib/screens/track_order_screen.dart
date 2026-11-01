@@ -10,7 +10,8 @@ class TrackOrderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final activeOrders = provider.orders.where((order) {
+    final ordersList = provider.orders;
+    final activeOrders = ordersList.where((order) {
       if (order.status != OrderStatus.served) return true;
       if (order.servedAt == null) return true;
       return DateTime.now().difference(order.servedAt!) <= const Duration(minutes: 10);
@@ -55,6 +56,10 @@ class TrackOrderScreen extends StatelessWidget {
   }
 
   Widget _buildOrderTracker(BuildContext context, Order order) {
+    final orderIdSuffix = order.id.length >= 6
+        ? order.id.substring(order.id.length - 6)
+        : order.id;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
@@ -75,7 +80,7 @@ class TrackOrderScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Order #${order.id.substring(order.id.length - 6)}',
+                    Text('Order #$orderIdSuffix',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.textDark)),
                     const SizedBox(height: 4),
                     Text('${order.items.length} items • Est. 15 mins', style: const TextStyle(color: AppTheme.textLight, fontWeight: FontWeight.w500)),

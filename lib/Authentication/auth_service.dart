@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'jwt_helper.dart';
+import '../providers/app_provider.dart';
 
 /// Multi-Factor Authentication verification state for a session.
 enum MfaStatus {
@@ -294,7 +295,13 @@ class AuthService {
         str.contains('connection closed') ||
         str.contains('xmlhttprequest') ||
         str.contains('timed out') ||
-        str.contains('failed host lookup');
+        str.contains('failed host lookup') ||
+        str.contains('empty response') ||
+        str.contains('status code 400') ||
+        str.contains('status code 50') ||
+        str.contains('server error') ||
+        str.contains('bad gateway') ||
+        str.contains('service unavailable');
   }
 
   /// Sign up with a username and password.
@@ -308,7 +315,14 @@ class AuthService {
   }) async {
     final cleanUsername = username.trim().toLowerCase();
 
-    // 1. Validate credentials
+    // 1. Reserved staff usernames check
+    if (cleanUsername == 'admin' ||
+        cleanUsername == 'chef' ||
+        cleanUsername == 'kitchen') {
+      throw const AuthException('Username already exists');
+    }
+
+    // 2. Validate credentials
     final userErr = validateUsername(cleanUsername);
     if (userErr != null) {
       throw AuthException(userErr);
@@ -316,6 +330,16 @@ class AuthService {
     final passErr = validatePassword(password);
     if (passErr != null) {
       throw AuthException(passErr);
+    }
+
+    // 3. Local duplicate check
+    final registered = await getRegisteredUsernames();
+    if (registered.contains(cleanUsername)) {
+      throw const AuthException('Username already exists');
+    }
+    final existingLocalPass = await _getLocalStoredPassword(cleanUsername);
+    if (existingLocalPass != null) {
+      throw const AuthException('Username already exists');
     }
 
     final email = usernameToEmail(cleanUsername);
@@ -343,6 +367,8 @@ class AuthService {
         _localSession = null;
         _localUser = null;
         _localToken = null;
+        await _setLocalStoredPassword(cleanUsername, password);
+        await _registerLocalUser(cleanUsername, fullName: fullName);
         await _saveSessionSecurely(
           accessToken: res.session!.accessToken,
           refreshToken: res.session!.refreshToken ?? '',
@@ -359,6 +385,8 @@ class AuthService {
         );
         _isGuest = false;
         if (signInRes.session != null) {
+          await _setLocalStoredPassword(cleanUsername, password);
+          await _registerLocalUser(cleanUsername, fullName: fullName);
           await _saveSessionSecurely(
             accessToken: signInRes.session!.accessToken,
             refreshToken: signInRes.session!.refreshToken ?? '',
@@ -388,25 +416,17 @@ class AuthService {
         }
       }
 
-      // 2. Offline / Paused Supabase fallback: check local registry
-      if (isNetworkFailure(e)) {
-        final existingPassword = await _getLocalStoredPassword(cleanUsername);
-        if (existingPassword != null) {
-          throw const AuthException('Username already exists');
-        }
-
-        return _activateLocalSession(
-          username: cleanUsername,
-          fullName: fullName,
-          password: password,
-        );
+      // 2. Fallback for network failures or paused/inaccessible Supabase backend
+      final existingPassword = await _getLocalStoredPassword(cleanUsername);
+      if (existingPassword != null) {
+        throw const AuthException('Username already exists');
       }
 
-      // 3. For any other specific error from a live server
-      if (e is AuthException) {
-        throw AuthException(e.message);
-      }
-      throw AuthException(e.toString());
+      return _activateLocalSession(
+        username: cleanUsername,
+        fullName: fullName,
+        password: password,
+      );
     }
   }
 
@@ -464,6 +484,8 @@ class AuthService {
       _localToken = null;
 
       if (res.session != null) {
+        await _setLocalStoredPassword(cleanUsername, password);
+        await _registerLocalUser(cleanUsername);
         await _saveSessionSecurely(
           accessToken: res.session!.accessToken,
           refreshToken: res.session!.refreshToken ?? '',
@@ -472,21 +494,13 @@ class AuthService {
       }
       return res;
     } catch (e) {
-      // If network failure (e.g. Supabase project paused / offline)
-      if (isNetworkFailure(e)) {
-        final storedPassword = await _getLocalStoredPassword(cleanUsername);
-        if (storedPassword == null) {
-          throw const AuthException('Invalid username or password');
-        }
-
-        if (storedPassword != password) {
-          throw const AuthException('Invalid username or password');
-        }
-
+      // Check local vault if network failed or server rejected
+      final storedPassword = await _getLocalStoredPassword(cleanUsername);
+      if (storedPassword != null && storedPassword == password) {
         return _activateLocalSession(username: cleanUsername, password: password);
       }
 
-      // Live server responded with wrong credentials:
+      // Neither live server nor local store matched credentials:
       throw const AuthException('Invalid username or password');
     }
   }
@@ -535,6 +549,7 @@ class AuthService {
 
     if (password != null) {
       await _setLocalStoredPassword(username, password);
+      await _registerLocalUser(username, fullName: fullName);
     }
 
     await _saveSessionSecurely(
@@ -553,6 +568,43 @@ class AuthService {
   // ---------------------------------------------------------------------------
   // Secure Storage & Local Registry Helpers
   // ---------------------------------------------------------------------------
+
+  Future<Set<String>> getRegisteredUsernames() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList('caferio_registered_usernames') ?? [];
+      return list.map((e) => e.toLowerCase()).toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> _registerLocalUser(String username, {String? fullName}) async {
+    final clean = username.trim().toLowerCase();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList('caferio_registered_usernames') ?? [];
+      final set = list.map((e) => e.toLowerCase()).toSet();
+      set.add(clean);
+      await prefs.setStringList('caferio_registered_usernames', set.toList());
+      if (fullName != null) {
+        await prefs.setString('user_fullname_$clean', fullName);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _unregisterLocalUser(String username) async {
+    final clean = username.trim().toLowerCase();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList('caferio_registered_usernames') ?? [];
+      final set = list.map((e) => e.toLowerCase()).toSet();
+      set.remove(clean);
+      await prefs.setStringList('caferio_registered_usernames', set.toList());
+      await prefs.remove('user_fullname_$clean');
+      await prefs.remove('user_meta_$clean');
+    } catch (_) {}
+  }
 
   Future<void> _saveSessionSecurely({
     required String accessToken,
@@ -587,25 +639,38 @@ class AuthService {
   }
 
   Future<String?> _getLocalStoredPassword(String username) async {
+    final clean = username.trim().toLowerCase();
     try {
-      final secure = await _secureStorage.read(key: 'user_pass_$username');
+      final secure = await _secureStorage.read(key: 'user_pass_$clean');
       if (secure != null && secure.isNotEmpty) return secure;
     } catch (_) {}
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('user_pass_$username');
+      return prefs.getString('user_pass_$clean');
     } catch (_) {
       return null;
     }
   }
 
   Future<void> _setLocalStoredPassword(String username, String password) async {
+    final clean = username.trim().toLowerCase();
     try {
-      await _secureStorage.write(key: 'user_pass_$username', value: password);
+      await _secureStorage.write(key: 'user_pass_$clean', value: password);
     } catch (_) {}
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_pass_$username', password);
+      await prefs.setString('user_pass_$clean', password);
+    } catch (_) {}
+  }
+
+  Future<void> _removeLocalStoredPassword(String username) async {
+    final clean = username.trim().toLowerCase();
+    try {
+      await _secureStorage.delete(key: 'user_pass_$clean');
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_pass_$clean');
     } catch (_) {}
   }
 
@@ -633,28 +698,60 @@ class AuthService {
   /// Delete the current account permanently from Supabase & clear secure storage.
   Future<void> deleteAccount() async {
     final user = currentUser;
-    final username = currentUsername;
+    final username = currentUsername?.trim().toLowerCase();
+    final userId = user?.id;
 
-    // 1. If online Supabase session, trigger database cleanup
+    // 1. If online Supabase session, trigger database cleanup (best effort)
     if (!_isLocalSession && user != null) {
       try {
-        await _client.from('profiles').delete().eq('id', user.id);
+        await _client.from('profiles').delete().eq('id', user.id).timeout(const Duration(seconds: 4));
       } catch (_) {}
       try {
-        await _client.rpc('delete_user');
+        if (username != null) {
+          await _client.from('orders').delete().or('customer_id.eq.${user.id},customer_id.eq.$username').timeout(const Duration(seconds: 4));
+          await _client.from('customer_purchases').delete().or('customer_id.eq.${user.id},customer_id.eq.$username').timeout(const Duration(seconds: 4));
+        } else {
+          await _client.from('orders').delete().eq('customer_id', user.id).timeout(const Duration(seconds: 4));
+          await _client.from('customer_purchases').delete().eq('customer_id', user.id).timeout(const Duration(seconds: 4));
+        }
+      } catch (_) {}
+      try {
+        await _client.rpc('delete_user').timeout(const Duration(seconds: 4));
       } catch (_) {}
     }
 
-    // 2. Remove from local password registry
+    // 2. Remove credentials and registration from local vault
+    if (username != null) {
+      await _removeLocalStoredPassword(username);
+      await _unregisterLocalUser(username);
+    }
+
+    // 3. Clear all user-specific storage keys (cart, orders, favourites, chat, meta)
     if (username != null) {
       try {
-        await _secureStorage.delete(key: 'user_pass_$username');
         final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('user_pass_$username');
+        await prefs.remove('caferio_cart_$username');
+        await prefs.remove('caferio_favs_$username');
+        await prefs.remove('caferio_orders_$username');
+        await prefs.remove('caferio_chat_history_customer_$username');
+        await prefs.remove('user_meta_$username');
+        await prefs.remove('user_fullname_$username');
+        if (userId != null) {
+          await prefs.remove('caferio_cart_$userId');
+          await prefs.remove('caferio_favs_$userId');
+          await prefs.remove('caferio_orders_$userId');
+        }
       } catch (_) {}
     }
 
-    // 3. Clear all stored session tokens
+    // 4. Notify AppProvider to reset in-memory state for this user
+    if (username != null) {
+      try {
+        await AppProvider.instance?.deleteUserDataFor(username, userId);
+      } catch (_) {}
+    }
+
+    // 5. Clear all stored session tokens
     _isGuest = false;
     _isLocalSession = false;
     _localSession = null;
@@ -663,14 +760,14 @@ class AuthService {
 
     await _clearSecureSession();
 
-    // 4. Emit signedOut to notify AuthGate
+    // 6. Emit signedOut to notify AuthGate
     _localAuthStreamController.add(
       const AuthState(AuthChangeEvent.signedOut, null),
     );
 
-    // 5. Terminate remote session
+    // 7. Terminate remote session
     try {
-      await _client.auth.signOut(scope: SignOutScope.global);
+      await _client.auth.signOut(scope: SignOutScope.global).timeout(const Duration(seconds: 4));
     } catch (_) {}
   }
 

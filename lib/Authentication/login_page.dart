@@ -171,7 +171,6 @@ class _LoginPageState extends State<LoginPage> {
                             autofillHints: const [AutofillHints.username],
                             decoration: InputDecoration(
                               labelText: 'Username',
-                              hintText: 'e.g. admin or chef_mario',
                               prefixIcon: const Icon(Icons.alternate_email, size: 20),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14),

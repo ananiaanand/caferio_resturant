@@ -11,10 +11,11 @@ class SalesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
+    final allOrders = provider.allOrders;
     
     // Filter completed/served orders for today
     final today = DateTime.now();
-    final completedOrders = provider.orders.where((o) {
+    final completedOrders = allOrders.where((o) {
       final isCompleted = o.status == OrderStatus.completed || o.status == OrderStatus.served;
       final isToday = o.createdAt.year == today.year && o.createdAt.month == today.month && o.createdAt.day == today.day;
       return isCompleted && isToday;
@@ -74,7 +75,7 @@ class SalesScreen extends StatelessWidget {
                     width: cardWidth,
                     child: _MetricCard(
                       title: 'Pending Orders',
-                      value: '${provider.orders.length - completedOrders.length}',
+                      value: '${allOrders.length - completedOrders.length}',
                       icon: Icons.pending_actions,
                       color: Colors.orange,
                     ),
