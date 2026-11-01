@@ -9,7 +9,7 @@ A production-grade, JWT-based authentication system built with **Flutter**, **Da
 ```
 [ User Input ]
    ├── Username (3-20 chars, [a-zA-Z0-9_.])
-   └── Password (12+ chars, Upper, Lower, Number, Symbol)
+   └── Password (Required)
          │
          ▼
 [ AuthService ]

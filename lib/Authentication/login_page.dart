@@ -108,10 +108,19 @@ class _LoginPageState extends State<LoginPage> {
   void _fillDemoCredentials() {
     setState(() {
       _usernameController.text = 'admin';
-      _passwordController.text = 'Admin@123456!';
+      _passwordController.text = 'admin';
       _isSignUp = false;
     });
-    _showMessage('Filled username: admin, password: Admin@123456!');
+    _showMessage('Filled Admin: admin / admin');
+  }
+
+  void _fillChefCredentials() {
+    setState(() {
+      _usernameController.text = 'chef';
+      _passwordController.text = 'chef';
+      _isSignUp = false;
+    });
+    _showMessage('Filled Chef: chef / chef');
   }
 
   @override
@@ -201,35 +210,6 @@ class _LoginPageState extends State<LoginPage> {
                             onFieldSubmitted: (_) => _submit(),
                           ),
 
-                          if (_isSignUp) ...[
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade200),
-                              ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Password requirements:',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textDark,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text('• Minimum 12 characters long', style: TextStyle(fontSize: 11, color: Colors.black54)),
-                                  Text('• At least one uppercase (A-Z) & lowercase (a-z)', style: TextStyle(fontSize: 11, color: Colors.black54)),
-                                  Text('• At least one number (0-9) & one symbol (!@#\$%...)', style: TextStyle(fontSize: 11, color: Colors.black54)),
-                                ],
-                              ),
-                            ),
-                          ],
-
                           const SizedBox(height: 24),
 
                           // Main Action Button (Log In / Sign Up)
@@ -296,22 +276,35 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 12),
 
                           // Quick Demo Fill
-                          Center(
-                            child: TextButton.icon(
-                              icon: const Icon(
-                                Icons.auto_fix_high,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              label: const Text(
-                                'Fill Demo (admin / admin)',
-                                style: TextStyle(
-                                  fontSize: 12,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8,
+                            children: [
+                              TextButton.icon(
+                                icon: const Icon(
+                                  Icons.admin_panel_settings_outlined,
+                                  size: 15,
                                   color: Colors.grey,
                                 ),
+                                label: const Text(
+                                  'Admin (admin / admin)',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                onPressed: _fillDemoCredentials,
                               ),
-                              onPressed: _fillDemoCredentials,
-                            ),
+                              TextButton.icon(
+                                icon: const Icon(
+                                  Icons.restaurant_outlined,
+                                  size: 15,
+                                  color: Colors.grey,
+                                ),
+                                label: const Text(
+                                  'Chef (chef / chef)',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                onPressed: _fillChefCredentials,
+                              ),
+                            ],
                           ),
 
                           // Explore Menu as Guest Button

@@ -96,10 +96,21 @@ class AuthService {
           _client.auth.currentSession == null) {
         final claims = JwtClaims.parse(token);
         if (claims != null && !claims.isExpired) {
+          final cleanUser = username.trim().toLowerCase();
+          final savedRole = claims.userMetadata['role'] as String? ??
+              (cleanUser == 'admin'
+                  ? 'admin'
+                  : (cleanUser == 'chef' || cleanUser == 'kitchen'
+                      ? 'chef'
+                      : 'customer'));
           final user = User(
             id: claims.subject ?? 'usr_$username',
-            appMetadata: {'provider': 'supabase_jwt'},
-            userMetadata: {'username': username, 'full_name': username},
+            appMetadata: {'provider': 'supabase_jwt', 'role': savedRole},
+            userMetadata: {
+              'username': username,
+              'full_name': username,
+              'role': savedRole,
+            },
             aud: 'authenticated',
             createdAt: DateTime.now().toIso8601String(),
             email: claims.email ?? usernameToEmail(username),
@@ -171,6 +182,24 @@ class AuthService {
     return null;
   }
 
+  /// Current user's normalized role: 'admin', 'chef', or 'customer'.
+  String get currentRole {
+    final user = currentUser;
+    if (user == null) return 'customer';
+    final userMetaRole = user.userMetadata?['role'] as String?;
+    if (userMetaRole != null && userMetaRole.isNotEmpty) {
+      return userMetaRole.toLowerCase();
+    }
+    final appMetaRole = user.appMetadata['role'] as String?;
+    if (appMetaRole != null && appMetaRole.isNotEmpty) {
+      return appMetaRole.toLowerCase();
+    }
+    final username = currentUsername?.trim().toLowerCase();
+    if (username == 'admin') return 'admin';
+    if (username == 'chef' || username == 'kitchen') return 'chef';
+    return 'customer';
+  }
+
   /// Unified stream of authentication state events.
   Stream<AuthState> get onAuthStateChange {
     late final StreamController<AuthState> controller;
@@ -239,30 +268,10 @@ class AuthService {
     return null;
   }
 
-  /// Validates password strength:
-  /// - Minimum 12 characters
-  /// - At least one uppercase letter (A-Z)
-  /// - At least one lowercase letter (a-z)
-  /// - At least one number (0-9)
-  /// - At least one symbol (!@#$%^&*...)
+  /// Validates password.
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter a password';
-    }
-    if (value.length < 12) {
-      return 'Password must be at least 12 characters long';
-    }
-    if (!RegExp(r'[A-Z]').hasMatch(value)) {
-      return 'Password must contain at least one uppercase letter (A-Z)';
-    }
-    if (!RegExp(r'[a-z]').hasMatch(value)) {
-      return 'Password must contain at least one lowercase letter (a-z)';
-    }
-    if (!RegExp(r'[0-9]').hasMatch(value)) {
-      return 'Password must contain at least one number (0-9)';
-    }
-    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-      return 'Password must contain at least one symbol (!@#\$%^&*...)';
     }
     return null;
   }
@@ -418,6 +427,31 @@ class AuthService {
 
     final email = usernameToEmail(cleanUsername);
 
+    // Built-in credential checks for Admin and Chef panels
+    if (cleanUsername == 'admin') {
+      if (password == 'admin' || password == 'Admin@123456!') {
+        return _activateLocalSession(
+          username: cleanUsername,
+          password: password,
+          role: 'admin',
+        );
+      } else {
+        throw const AuthException('Invalid username or password');
+      }
+    }
+
+    if (cleanUsername == 'chef' || cleanUsername == 'kitchen') {
+      if (password == 'chef') {
+        return _activateLocalSession(
+          username: cleanUsername,
+          password: password,
+          role: 'chef',
+        );
+      } else {
+        throw const AuthException('Invalid username or password');
+      }
+    }
+
     try {
       final res = await _client.auth.signInWithPassword(
         email: email,
@@ -442,11 +476,6 @@ class AuthService {
       if (isNetworkFailure(e)) {
         final storedPassword = await _getLocalStoredPassword(cleanUsername);
         if (storedPassword == null) {
-          // Built-in demo admin fallback
-          if (cleanUsername == 'admin' &&
-              (password == 'admin' || password == 'Admin@123456!')) {
-            return _activateLocalSession(username: cleanUsername, password: password);
-          }
           throw const AuthException('Invalid username or password');
         }
 
@@ -466,16 +495,26 @@ class AuthService {
     required String username,
     String? fullName,
     String? password,
+    String? role,
   }) async {
-    final token = JwtClaims.createLocalJwt(username: username);
+    final clean = username.trim().toLowerCase();
+    final assignedRole = role ??
+        (clean == 'admin'
+            ? 'admin'
+            : (clean == 'chef' || clean == 'kitchen' ? 'chef' : 'customer'));
+    final token = JwtClaims.createLocalJwt(
+      username: username,
+      role: assignedRole,
+    );
     final claims = JwtClaims.parse(token);
 
     final user = User(
       id: claims?.subject ?? 'usr_$username',
-      appMetadata: {'provider': 'supabase_jwt'},
+      appMetadata: {'provider': 'supabase_jwt', 'role': assignedRole},
       userMetadata: {
         'username': username,
         'full_name': fullName ?? username,
+        'role': assignedRole,
       },
       aud: 'authenticated',
       createdAt: DateTime.now().toIso8601String(),

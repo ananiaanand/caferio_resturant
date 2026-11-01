@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../screens/admin/admin_layout.dart';
+import '../screens/kitchen/kitchen_layout.dart';
 import '../screens/main_layout.dart';
 import '../utils/theme.dart';
 import 'auth_service.dart';
@@ -59,9 +61,7 @@ class _AuthGateState extends State<AuthGate> {
         // Authenticated user -> pass through MFA Gate
         return _MfaGate(
           key: ValueKey<String>(
-            session?.accessToken ??
-                AuthService.instance.currentAccessToken ??
-                'session',
+            '${session?.accessToken ?? AuthService.instance.currentAccessToken ?? 'session'}_${AuthService.instance.currentRole}',
           ),
           requireMfa: widget.requireMfa,
         );
@@ -202,9 +202,19 @@ class _MfaGateState extends State<_MfaGate> {
           case MfaStatus.needsChallenge:
             return MfaChallengePage(onDone: _refresh);
           case MfaStatus.ok:
-            return const MainLayout();
+            return _buildRoleLayout();
         }
       },
     );
+  }
+
+  Widget _buildRoleLayout() {
+    final role = AuthService.instance.currentRole;
+    if (role == 'admin') {
+      return const AdminLayout();
+    } else if (role == 'chef' || role == 'kitchen') {
+      return const KitchenLayout();
+    }
+    return const MainLayout();
   }
 }

@@ -1,9 +1,15 @@
 // supabase/functions/_shared/gemini.ts
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+};
+
 const KEY = Deno.env.get("GEMINI_API_KEY") ?? "";
 const BASE = "https://generativelanguage.googleapis.com/v1beta";
 
-export const EMBED_MODEL = Deno.env.get("GEMINI_EMBED_MODEL") ?? "gemini-embedding-001";
-export const CHAT_MODEL = Deno.env.get("GEMINI_CHAT_MODEL") ?? "gemini-3.6-flash";
+export const EMBED_MODEL = Deno.env.get("GEMINI_EMBED_MODEL") ?? "text-embedding-004";
+export const CHAT_MODEL = Deno.env.get("GEMINI_CHAT_MODEL") ?? "gemini-1.5-flash";
 
 export async function embed(
   text: string,

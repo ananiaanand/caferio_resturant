@@ -96,19 +96,26 @@ class JwtClaims {
         .replaceAll('=', '');
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final exp = now + (7 * 24 * 3600); // 7 days expiration
+    final clean = username.trim().toLowerCase();
+    final resolvedRole = role ??
+        (clean == 'admin'
+            ? 'admin'
+            : (clean == 'chef' || clean == 'kitchen' ? 'chef' : 'customer'));
     final payloadMap = {
-      'sub': 'usr_${username.toLowerCase()}_${DateTime.now().millisecondsSinceEpoch}',
-      'email': email ?? '${username.toLowerCase()}@myapp.app',
-      'role': role ?? 'authenticated',
+      'sub': 'usr_${clean}_${DateTime.now().millisecondsSinceEpoch}',
+      'email': email ?? '$clean@myapp.app',
+      'role': resolvedRole,
       'aal': 'aal1',
       'iat': now,
       'exp': exp,
       'user_metadata': {
         'username': username,
         'full_name': username,
+        'role': resolvedRole,
       },
       'app_metadata': {
         'provider': 'caferio_local',
+        'role': resolvedRole,
       },
     };
     final payload = base64Url
