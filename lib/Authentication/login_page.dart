@@ -244,8 +244,9 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 14),
 
                           // Toggle Log In / Sign Up Link
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
                                 _isSignUp

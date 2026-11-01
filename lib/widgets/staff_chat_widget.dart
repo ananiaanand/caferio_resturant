@@ -154,7 +154,7 @@ class _StaffChatSheetState extends State<StaffChatSheet> {
 
     if (widget.role == ChatRole.chef) {
       buffer.writeln('=== LIVE KITCHEN TICKETS ===');
-      final pending = provider.orders
+      final pending = provider.allOrders
           .where((o) =>
               o.status == OrderStatus.received ||
               o.status == OrderStatus.preparing ||
@@ -191,7 +191,7 @@ class _StaffChatSheetState extends State<StaffChatSheet> {
     } else {
       // Admin context
       final today = DateTime.now();
-      final completedToday = provider.orders.where((o) {
+      final completedToday = provider.allOrders.where((o) {
         final isCompleted =
             o.status == OrderStatus.completed || o.status == OrderStatus.served;
         final isToday = o.createdAt.year == today.year &&
@@ -205,7 +205,7 @@ class _StaffChatSheetState extends State<StaffChatSheet> {
         revenueToday += o.totalAmount;
       }
 
-      final activeOrders = provider.orders
+      final activeOrders = provider.allOrders
           .where((o) =>
               o.status != OrderStatus.served &&
               o.status != OrderStatus.completed)
@@ -215,7 +215,7 @@ class _StaffChatSheetState extends State<StaffChatSheet> {
       buffer.writeln('• Today\'s Revenue: ₹${revenueToday.toStringAsFixed(0)}');
       buffer.writeln('• Completed Orders Today: ${completedToday.length}');
       buffer.writeln('• Active / In-progress Orders: ${activeOrders.length}');
-      buffer.writeln('• Total Orders Recorded: ${provider.orders.length}');
+      buffer.writeln('• Total Orders Recorded: ${provider.allOrders.length}');
 
       final shortage =
           provider.inventoryItems.where((i) => i.isOutOfStock).toList();

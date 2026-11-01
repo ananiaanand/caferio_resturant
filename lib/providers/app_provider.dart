@@ -70,6 +70,7 @@ class AppProvider with ChangeNotifier {
     if (_currentUserKey != newKey) {
       _currentUserKey = newKey;
       _cart.clear();
+      _orders.clear();
       _cartRecommendations = [];
       _customerBehaviour = null;
       await _loadCart();
@@ -247,11 +248,31 @@ class AppProvider with ChangeNotifier {
   Future<void> _saveOrders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      // 1. Save all restaurant orders (for kitchen/admin)
-      final allOrdersJson = jsonEncode(_orders.map((o) => o.toJson()).toList());
-      await prefs.setString('caferio_all_orders', allOrdersJson);
+      // 1. Maintain global restaurant orders (for kitchen/admin)
+      final allOrdersString = prefs.getString('caferio_all_orders');
+      final List<Order> combinedAll = [];
+      if (allOrdersString != null && allOrdersString.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(allOrdersString) as List;
+          combinedAll.addAll(
+            decoded.map((item) => Order.fromJson(item as Map<String, dynamic>)),
+          );
+        } catch (_) {}
+      }
+      for (final o in _orders) {
+        final existingIdx = combinedAll.indexWhere((existing) => existing.id == o.id);
+        if (existingIdx >= 0) {
+          combinedAll[existingIdx] = o;
+        } else {
+          combinedAll.insert(0, o);
+        }
+      }
+      await prefs.setString(
+        'caferio_all_orders',
+        jsonEncode(combinedAll.map((o) => o.toJson()).toList()),
+      );
 
-      // 2. Save user-scoped orders
+      // 2. Save user-scoped orders (strictly separated per customer account)
       if (_currentUserKey != 'guest') {
         final myOrders = _orders.where((o) => _isOrderForCurrentUser(o)).toList();
         final userOrdersJson = jsonEncode(myOrders.map((o) => o.toJson()).toList());
@@ -265,22 +286,27 @@ class AppProvider with ChangeNotifier {
   Future<void> _loadOrders() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      // Load all restaurant orders
-      final allOrdersString = prefs.getString('caferio_all_orders');
-      if (allOrdersString != null && allOrdersString.isNotEmpty) {
-        final decoded = jsonDecode(allOrdersString) as List;
-        final localAll = decoded
-            .map((item) => Order.fromJson(item as Map<String, dynamic>))
-            .toList();
-        for (final o in localAll) {
-          if (!_orders.any((existing) => existing.id == o.id)) {
-            _orders.add(o);
+      _orders.clear();
+
+      final role = AuthService.instance.currentRole;
+      final isStaff = role == 'admin' || role == 'chef' || role == 'kitchen';
+
+      if (isStaff) {
+        // Staff loads all restaurant orders for kitchen/admin dashboard
+        final allOrdersString = prefs.getString('caferio_all_orders');
+        if (allOrdersString != null && allOrdersString.isNotEmpty) {
+          final decoded = jsonDecode(allOrdersString) as List;
+          final localAll = decoded
+              .map((item) => Order.fromJson(item as Map<String, dynamic>))
+              .toList();
+          for (final o in localAll) {
+            if (!_orders.any((existing) => existing.id == o.id)) {
+              _orders.add(o);
+            }
           }
         }
-      }
-
-      // Also merge any saved user orders if not already present
-      if (_currentUserKey != 'guest') {
+      } else {
+        // Customer or Guest ONLY loads their own personal orders
         final userOrdersString = prefs.getString('caferio_orders_$_currentUserKey');
         if (userOrdersString != null && userOrdersString.isNotEmpty) {
           final decoded = jsonDecode(userOrdersString) as List;
@@ -288,8 +314,8 @@ class AppProvider with ChangeNotifier {
               .map((item) => Order.fromJson(item as Map<String, dynamic>))
               .toList();
           for (final o in localUserOrders) {
-            if (!_orders.any((existing) => existing.id == o.id)) {
-              _orders.insert(0, o);
+            if (_isOrderForCurrentUser(o) && !_orders.any((existing) => existing.id == o.id)) {
+              _orders.add(o);
             }
           }
         }
@@ -363,7 +389,7 @@ class AppProvider with ChangeNotifier {
           .select('*, order_items(id, menu_item_id, quantity)')
           .order('id', ascending: false); // fallback sort if created_at missing
 
-      _orders.clear();
+      final fetchedOrders = <Order>[];
       for (final row in data) {
         try {
           // Build CartItems by matching menu_item_id to our local menu catalogue
@@ -394,7 +420,7 @@ class AppProvider with ChangeNotifier {
             orElse: () => OrderStatus.received,
           );
 
-          _orders.add(
+          fetchedOrders.add(
             Order(
               id: row['id']?.toString() ?? '',
               customerId: row['customer_id']?.toString(),
@@ -417,8 +443,29 @@ class AppProvider with ChangeNotifier {
         }
       }
 
-      // Save successfully fetched Supabase orders locally so they persist across offline/login
-      await _saveOrders();
+      // 1. Save all fetched restaurant orders for staff dashboards
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'caferio_all_orders',
+        jsonEncode(fetchedOrders.map((o) => o.toJson()).toList()),
+      );
+
+      // 2. Isolate customer orders from staff orders
+      final role = AuthService.instance.currentRole;
+      final isStaff = role == 'admin' || role == 'chef' || role == 'kitchen';
+
+      _orders.clear();
+      if (isStaff) {
+        _orders.addAll(fetchedOrders);
+      } else {
+        _orders.addAll(fetchedOrders.where((o) => _isOrderForCurrentUser(o)));
+        if (_currentUserKey != 'guest') {
+          await prefs.setString(
+            'caferio_orders_$_currentUserKey',
+            jsonEncode(_orders.map((o) => o.toJson()).toList()),
+          );
+        }
+      }
       notifyListeners();
     } catch (e) {
       debugPrint(
@@ -924,27 +971,37 @@ class AppProvider with ChangeNotifier {
   List<Order> get allOrders => _orders;
 
   /// User-scoped orders.
-  /// Admin and Chef see all orders.
-  /// Customers and Guests ONLY see orders they placed!
+  /// Track Order and customer widgets ALWAYS only see orders placed by this current user!
+  /// Staff dashboards (Kitchen & Admin) use [allOrders].
   List<Order> get orders {
-    final role = AuthService.instance.currentRole;
-    if (role == 'admin' || role == 'chef' || role == 'kitchen') {
-      return _orders;
-    }
     return _orders.where((o) => _isOrderForCurrentUser(o)).toList();
   }
 
   bool _isOrderForCurrentUser(Order order) {
-    final uid = AuthService.instance.currentUser?.id;
+    final uid = AuthService.instance.currentUser?.id.trim().toLowerCase();
     final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
     final cid = order.customerId?.trim().toLowerCase();
-    if (cid == null) return false;
-    if (uid != null && cid == uid.toLowerCase()) return true;
+
+    // If order has no customerId, it cannot belong to any account
+    if (cid == null || cid.isEmpty) return false;
+
+    // If user is not authenticated: only matches if order was explicitly placed by guest
+    if (uname == null && uid == null) {
+      return AuthService.instance.isGuest && cid == 'guest';
+    }
+
+    // Authenticated users NEVER match anonymous guest orders
+    if (cid == 'guest') return false;
+
+    // Strict exact match with user ID (UUID or usr_<username>)
+    if (uid != null && cid == uid) return true;
+
+    // Strict exact match with username
     if (uname != null) {
       if (cid == uname) return true;
       if (cid == 'usr_$uname') return true;
-      if (cid.startsWith('usr_${uname}_')) return true;
     }
+
     return false;
   }
 

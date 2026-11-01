@@ -11,7 +11,7 @@ class PendingOrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final pendingOrders = provider.orders.where((o) => o.status.index < OrderStatus.served.index).toList();
+    final pendingOrders = provider.allOrders.where((o) => o.status.index < OrderStatus.served.index).toList();
 
     return Padding(
       padding: const EdgeInsets.all(24.0),

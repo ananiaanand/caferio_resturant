@@ -11,7 +11,7 @@ class CompletedOrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final completedOrders = provider.orders.where((o) => o.status == OrderStatus.served).toList();
+    final completedOrders = provider.allOrders.where((o) => o.status == OrderStatus.served).toList();
 
     return Padding(
       padding: const EdgeInsets.all(24.0),

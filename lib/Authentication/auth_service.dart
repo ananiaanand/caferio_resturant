@@ -163,12 +163,20 @@ class AuthService {
       _client.auth.currentSession?.refreshToken;
 
   /// Current session (Supabase or local JWT session).
-  Session? get currentSession =>
-      _isLocalSession ? _localSession : (_client.auth.currentSession ?? _localSession);
+  Session? get currentSession {
+    if (_isGuest) return null;
+    if (_isLocalSession) return _localSession;
+    if (!isAuthenticated) return null;
+    return _client.auth.currentSession ?? _localSession;
+  }
 
   /// Current authenticated user.
-  User? get currentUser =>
-      _isLocalSession ? _localUser : (_client.auth.currentUser ?? _localUser);
+  User? get currentUser {
+    if (_isGuest) return null;
+    if (_isLocalSession) return _localUser;
+    if (!isAuthenticated) return null;
+    return _client.auth.currentUser ?? _localUser;
+  }
 
   /// Active username (e.g. "admin", "ananya").
   String? get currentUsername {

@@ -201,6 +201,34 @@ void main() {
       expect(provider.favouriteItems.isEmpty, true);
       expect(provider.orders.isEmpty, true);
     });
+
+    test('Strict Order Tracking Isolation: prefix/substring usernames cannot cross-track orders', () async {
+      // User X places an order
+      await AuthService.instance.signOut();
+      await AuthService.instance.signUp(username: 'caferio_user_1', password: 'password_x_123');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      provider.addToCart(provider.menuItems[0]);
+      final placed = await provider.placeOrder();
+      expect(placed, true);
+      expect(provider.orders.length, 1);
+      final orderId = provider.orders.first.id;
+
+      // User X signs out
+      await AuthService.instance.signOut();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // User Y signs in with prefix 'caferio_user'
+      await AuthService.instance.signUp(username: 'caferio_user', password: 'password_y_123');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // User Y MUST NOT see User X's order in track order screen / provider.orders
+      expect(provider.orders.isEmpty, true);
+      expect(provider.orders.any((o) => o.id == orderId), false);
+
+      // Clean up
+      await AuthService.instance.signOut();
+    });
   });
 }
 
