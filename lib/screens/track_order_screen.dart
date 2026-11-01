@@ -22,36 +22,56 @@ class TrackOrderScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Track Order'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh Orders',
+            onPressed: () => provider.refreshOrders(),
+          ),
+        ],
       ),
-      body: activeOrders.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      body: RefreshIndicator(
+        color: AppTheme.primaryColor,
+        onRefresh: () => provider.refreshOrders(),
+        child: activeOrders.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(32),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.delivery_dining, size: 80, color: AppTheme.primaryColor),
+                          ),
+                          const SizedBox(height: 24),
+                          Text('No active orders', style: Theme.of(context).textTheme.displayMedium),
+                          const SizedBox(height: 8),
+                          const Text('When you place an order, you can\ntrack its status here.',
+                              textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textLight, height: 1.5)),
+                        ],
+                      ),
                     ),
-                    child: const Icon(Icons.delivery_dining, size: 80, color: AppTheme.primaryColor),
                   ),
-                  const SizedBox(height: 24),
-                  Text('No active orders', style: Theme.of(context).textTheme.displayMedium),
-                  const SizedBox(height: 8),
-                  const Text('When you place an order, you can\ntrack its status here.',
-                      textAlign: TextAlign.center, style: TextStyle(color: AppTheme.textLight, height: 1.5)),
                 ],
+              )
+            : ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                itemCount: activeOrders.length,
+                itemBuilder: (context, index) {
+                  final order = activeOrders[index];
+                  return _buildOrderTracker(context, order);
+                },
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: activeOrders.length,
-              itemBuilder: (context, index) {
-                final order = activeOrders[index];
-                return _buildOrderTracker(context, order);
-              },
-            ),
+      ),
     );
   }
 

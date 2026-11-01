@@ -296,6 +296,44 @@ void main() {
       // Clean up
       await AuthService.instance.signOut();
     });
+
+    test('Order persistence across re-login: placed orders remain visible after logging out and logging back in', () async {
+      await AuthService.instance.signOut();
+      await AuthService.instance.signUp(username: 'user_relog', password: 'password_relog_1');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // 1. Add to cart & place order
+      final item = provider.menuItems.first;
+      provider.addToCart(item);
+      final placed = await provider.placeOrder();
+      expect(placed, true);
+      expect(provider.orders.length, 1);
+      final placedId = provider.orders.first.id;
+
+      // 2. Log out
+      await AuthService.instance.signOut();
+      await Future.delayed(const Duration(milliseconds: 100));
+      expect(AuthService.instance.isAuthenticated, false);
+      expect(provider.orders.isEmpty, true);
+
+      // 3. Log back in
+      await AuthService.instance.signIn(username: 'user_relog', password: 'password_relog_1');
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      expect(AuthService.instance.currentUsername, 'user_relog');
+      expect(provider.orders.length, 1, reason: 'Tracking orders must persist after logging back in!');
+      expect(provider.orders.first.id, placedId);
+
+      // 4. Test recovery even if user-scoped key was cleared but all_orders has it
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('caferio_orders_user_relog');
+      await provider.refreshOrders();
+      expect(provider.orders.length, 1, reason: 'Orders must be recovered from master orders store!');
+      expect(provider.orders.first.id, placedId);
+
+      // Clean up
+      await AuthService.instance.signOut();
+    });
   });
 }
 

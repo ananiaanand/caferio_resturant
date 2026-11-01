@@ -324,44 +324,96 @@ class AppProvider with ChangeNotifier {
     try {
       _currentUserKey = activeUserKey;
       final prefs = await SharedPreferences.getInstance();
-      _orders.clear();
 
       final role = AuthService.instance.currentRole;
       final isStaff = role == 'admin' || role == 'chef' || role == 'kitchen';
+
+      final List<Order> loaded = [];
 
       if (isStaff) {
         // Staff loads all restaurant orders for kitchen/admin dashboard
         final allOrdersString = prefs.getString('caferio_all_orders');
         if (allOrdersString != null && allOrdersString.isNotEmpty) {
-          final decoded = jsonDecode(allOrdersString) as List;
-          final localAll = decoded
-              .map((item) => Order.fromJson(item as Map<String, dynamic>))
-              .toList();
-          for (final o in localAll) {
-            if (!_orders.any((existing) => existing.id == o.id)) {
-              _orders.add(o);
+          try {
+            final decoded = jsonDecode(allOrdersString) as List;
+            for (final item in decoded) {
+              final o = Order.fromJson(item as Map<String, dynamic>);
+              if (!loaded.any((existing) => existing.id == o.id)) {
+                loaded.add(o);
+              }
             }
-          }
+          } catch (_) {}
         }
       } else {
-        // Customer or Guest ONLY loads their own personal orders
+        // Customer or Guest ONLY loads their own personal orders:
+        // 1. Load from user-scoped key
         final userOrdersString = prefs.getString('caferio_orders_$_currentUserKey');
         if (userOrdersString != null && userOrdersString.isNotEmpty) {
-          final decoded = jsonDecode(userOrdersString) as List;
-          final localUserOrders = decoded
-              .map((item) => Order.fromJson(item as Map<String, dynamic>))
-              .toList();
-          for (final o in localUserOrders) {
-            if (_isOrderForCurrentUser(o) && !_orders.any((existing) => existing.id == o.id)) {
-              _orders.add(o);
+          try {
+            final decoded = jsonDecode(userOrdersString) as List;
+            for (final item in decoded) {
+              final o = Order.fromJson(item as Map<String, dynamic>);
+              if (_isOrderForCurrentUser(o) && !loaded.any((existing) => existing.id == o.id)) {
+                loaded.add(o);
+              }
             }
+          } catch (_) {}
+        }
+
+        // 2. Also recover from master restaurant store (caferio_all_orders) filtered strictly for this user
+        final allOrdersString = prefs.getString('caferio_all_orders');
+        if (allOrdersString != null && allOrdersString.isNotEmpty) {
+          try {
+            final decoded = jsonDecode(allOrdersString) as List;
+            for (final item in decoded) {
+              final o = Order.fromJson(item as Map<String, dynamic>);
+              if (_isOrderForCurrentUser(o) && !loaded.any((existing) => existing.id == o.id)) {
+                loaded.add(o);
+              }
+            }
+          } catch (_) {}
+        }
+
+        // 3. If userId differs from username, also check caferio_orders_<userId>
+        final uid = AuthService.instance.currentUser?.id;
+        if (uid != null && uid != _currentUserKey) {
+          final uidOrdersString = prefs.getString('caferio_orders_$uid');
+          if (uidOrdersString != null && uidOrdersString.isNotEmpty) {
+            try {
+              final decoded = jsonDecode(uidOrdersString) as List;
+              for (final item in decoded) {
+                final o = Order.fromJson(item as Map<String, dynamic>);
+                if (_isOrderForCurrentUser(o) && !loaded.any((existing) => existing.id == o.id)) {
+                  loaded.add(o);
+                }
+              }
+            } catch (_) {}
           }
         }
+
+        // Resync user-scoped storage so it has all loaded orders
+        if (_currentUserKey != 'guest' && loaded.isNotEmpty) {
+          await prefs.setString(
+            'caferio_orders_$_currentUserKey',
+            jsonEncode(loaded.map((o) => o.toJson()).toList()),
+          );
+        }
       }
+
+      _orders.clear();
+      _orders.addAll(loaded);
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading local orders: $e');
     }
+  }
+
+  /// Public order refresh used by Track Order screen pull-to-refresh or navigation.
+  Future<void> refreshOrders() async {
+    await _loadOrders();
+    try {
+      await _fetchOrders();
+    } catch (_) {}
   }
 
   /// Load personalized recommendations and user taste profile.
@@ -481,11 +533,25 @@ class AppProvider with ChangeNotifier {
         }
       }
 
-      // 1. Save all fetched restaurant orders for staff dashboards
+      // 1. Preserve local offline orders and merge with remote fetched orders
       final prefs = await SharedPreferences.getInstance();
+      final allOrdersString = prefs.getString('caferio_all_orders');
+      final combined = List<Order>.from(fetchedOrders);
+      if (allOrdersString != null && allOrdersString.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(allOrdersString) as List;
+          for (final item in decoded) {
+            final local = Order.fromJson(item as Map<String, dynamic>);
+            if (local.id.startsWith('local_') && !combined.any((o) => o.id == local.id)) {
+              combined.add(local);
+            }
+          }
+        } catch (_) {}
+      }
+
       await prefs.setString(
         'caferio_all_orders',
-        jsonEncode(fetchedOrders.map((o) => o.toJson()).toList()),
+        jsonEncode(combined.map((o) => o.toJson()).toList()),
       );
 
       // 2. Isolate customer orders from staff orders
@@ -494,9 +560,9 @@ class AppProvider with ChangeNotifier {
 
       _orders.clear();
       if (isStaff) {
-        _orders.addAll(fetchedOrders);
+        _orders.addAll(combined);
       } else {
-        _orders.addAll(fetchedOrders.where((o) => _isOrderForCurrentUser(o)));
+        _orders.addAll(combined.where((o) => _isOrderForCurrentUser(o)));
         if (_currentUserKey != 'guest') {
           await prefs.setString(
             'caferio_orders_$_currentUserKey',
@@ -1023,6 +1089,7 @@ class AppProvider with ChangeNotifier {
     try {
       final uid = AuthService.instance.currentUser?.id.trim().toLowerCase();
       final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
+      final userEmail = AuthService.instance.currentUser?.email?.trim().toLowerCase();
       final cid = order.customerId?.trim().toLowerCase();
 
       // If order has no customerId, it cannot belong to any account
@@ -1037,12 +1104,21 @@ class AppProvider with ChangeNotifier {
       if (cid == 'guest') return false;
 
       // Strict exact match with user ID (UUID or usr_<username>)
-      if (uid != null && cid == uid) return true;
+      if (uid != null && uid.isNotEmpty && cid == uid) return true;
 
       // Strict exact match with username
-      if (uname != null) {
+      if (uname != null && uname.isNotEmpty) {
         if (cid == uname) return true;
         if (cid == 'usr_$uname') return true;
+
+        // Legacy or timestamped local sessions: usr_<uname>_<timestamp>
+        final timestampPattern = RegExp('^usr_${RegExp.escape(uname)}_\\d{8,}\$');
+        if (timestampPattern.hasMatch(cid)) return true;
+      }
+
+      // Match user's email if associated
+      if (userEmail != null && userEmail.isNotEmpty && cid == userEmail) {
+        return true;
       }
 
       return false;
@@ -1166,9 +1242,11 @@ class AppProvider with ChangeNotifier {
   Future<bool> placeOrder() async {
     if (_cart.isEmpty) return false;
 
-    final uid = AuthService.instance.currentUser?.id;
     final uname = AuthService.instance.currentUsername?.trim().toLowerCase();
-    final customerId = uid ?? (uname != null ? 'usr_$uname' : 'guest');
+    final uid = AuthService.instance.currentUser?.id;
+    final customerId = (uname != null && uname.isNotEmpty)
+        ? 'usr_$uname'
+        : (uid ?? 'guest');
     final cartSnapshot = List<CartItem>.from(_cart);
     final total = cartTotal;
     final now = DateTime.now();
