@@ -115,6 +115,11 @@ class AppProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  static const String mlBaseUrl = String.fromEnvironment(
+    'ML_API_URL',
+    defaultValue: 'http://127.0.0.1:8000',
+  );
+
   Future<void> fetchMLStockoutPredictions() async {
     try {
       final itemsPayload = _inventoryItems
@@ -128,7 +133,7 @@ class AppProvider with ChangeNotifier {
           .toList();
 
       final res = await http.post(
-        Uri.parse('http://127.0.0.1:8000/predict/stockout'),
+        Uri.parse('$mlBaseUrl/predict/stockout'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'items': itemsPayload, 'horizon_days': 21}),
       );
@@ -197,7 +202,7 @@ class AppProvider with ChangeNotifier {
       // Send refill log to Python backend
       try {
         await http.post(
-          Uri.parse('http://127.0.0.1:8000/refill'),
+          Uri.parse('$mlBaseUrl/refill'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'ingredient': item.name,
