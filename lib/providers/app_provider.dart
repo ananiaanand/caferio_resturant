@@ -906,7 +906,7 @@ class AppProvider with ChangeNotifier {
       description: 'Extra meat, cheese, and fries loaded inside',
       price: 220.0,
       category: 'Shawarma',
-      imageUrl: 'https://loremflickr.com/400/400/shawarma?lock=1',
+      imageUrl: 'assets/images/loaded_shawarma.png',
     ),
     MenuItem(
       id: '33',
@@ -977,7 +977,7 @@ class AppProvider with ChangeNotifier {
     MenuItem(
       id: '40',
       name: 'Gulab Jamun',
-      ingredients: ['Milk/Mawa', 'Sugar syrup', 'Cardamom'],
+      ingredients: [],
       description: 'Deep fried milk dumplings in sugar syrup',
       price: 80.0,
       category: 'Desserts',

@@ -293,30 +293,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Expanded(
             child: Stack(
+              fit: StackFit.expand,
               children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Opacity(
-                    opacity: item.isOutOfStock ? 0.5 : 1.0,
-                    child: item.imageUrl.startsWith('assets/')
-                        ? Image.asset(
-                            item.imageUrl,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[100],
-                              child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    child: Opacity(
+                      opacity: item.isOutOfStock ? 0.5 : 1.0,
+                      child: item.imageUrl.startsWith('assets/')
+                          ? Image.asset(
+                              item.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: Colors.grey[100],
+                                child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
+                              ),
+                            )
+                          : Image.network(
+                              item.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: Colors.grey[100],
+                                child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
+                              ),
                             ),
-                          )
-                        : Image.network(
-                            item.imageUrl,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[100],
-                              child: const Center(child: Icon(Icons.fastfood, color: Colors.grey)),
-                            ),
-                          ),
+                    ),
                   ),
                 ),
                 Positioned(
