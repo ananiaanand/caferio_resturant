@@ -71,18 +71,31 @@ class EditsScreen extends StatelessWidget {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        item.imageUrl,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 60,
-                          height: 60,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                        ),
-                      ),
+                      child: item.imageUrl.startsWith('assets/')
+                          ? Image.asset(
+                              item.imageUrl,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                width: 60,
+                                height: 60,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                              ),
+                            )
+                          : Image.network(
+                              item.imageUrl,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                width: 60,
+                                height: 60,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                              ),
+                            ),
                     ),
                     title: Text(
                       item.name,

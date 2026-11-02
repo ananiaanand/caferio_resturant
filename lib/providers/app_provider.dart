@@ -977,12 +977,11 @@ class AppProvider with ChangeNotifier {
     MenuItem(
       id: '40',
       name: 'Gulab Jamun',
-      ingredients: [],
+      ingredients: ['Milk/Mawa', 'Sugar syrup', 'Cardamom'],
       description: 'Deep fried milk dumplings in sugar syrup',
       price: 80.0,
       category: 'Desserts',
-      imageUrl:
-          'https://images.unsplash.com/photo-1596803244618-8dbee441d70b?auto=format&fit=crop&q=80&w=400',
+      imageUrl: 'assets/images/gulab_jamun.jpg',
     ),
     MenuItem(
       id: '41',
@@ -991,8 +990,7 @@ class AppProvider with ChangeNotifier {
       description: 'Refreshing yogurt-based mango drink',
       price: 90.0,
       category: 'Beverages',
-      imageUrl:
-          'https://images.unsplash.com/photo-1546888281-7c9c04961d6e?auto=format&fit=crop&q=80&w=400',
+      imageUrl: 'assets/images/mango_lassi.png',
     ),
   ];
 
