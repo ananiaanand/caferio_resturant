@@ -14,13 +14,13 @@ Future<void> main() async {
   // Example: flutter run --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...
   const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://rpuzznremhzsrwgzpggk.supabase.co',
+    defaultValue: 'https://etgnpwntblbobdlkvflz.supabase.co',
   );
 
   const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
     defaultValue:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwdXp6bnJlbWh6c3J3Z3pwZ2drIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjA1ODYsImV4cCI6MjA3MjQ5NjU4Nn0.sSi9oYbhkyn3uXnd8twbUa-wH99ySvSkCPCS45J_Be8',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0Z25wd250Ymxib2JkbGt2Zmx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMjAwMTUsImV4cCI6MjEwNDg5NjAxNX0.0gf5Ao_dRoP8lmDCQTw94tEP8diqlDrlGLCj_dUtpfc',
   );
 
   try {
