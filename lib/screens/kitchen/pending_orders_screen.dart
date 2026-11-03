@@ -76,29 +76,7 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.receipt_long, size: 16, color: AppTheme.primaryColor),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${allPending.length} Active',
-                        style: const TextStyle(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+
               ],
             ),
             const SizedBox(height: 12),
@@ -495,7 +473,7 @@ class _OrderTicketCardState extends State<_OrderTicketCard> {
             icon: Icon(_getNextActionIcon(order.status), size: 20),
             label: Text(
               _getNextActionText(order.status),
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.3),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: _getActionBtnColor(order.status),
@@ -637,7 +615,7 @@ class _OrderTicketCardState extends State<_OrderTicketCard> {
   IconData _getNextActionIcon(OrderStatus status) {
     switch (status) {
       case OrderStatus.received: return Icons.soup_kitchen;
-      case OrderStatus.preparing: return Icons.timelapse;
+      case OrderStatus.preparing: return Icons.hourglass_bottom;
       case OrderStatus.halfDone: return Icons.check_circle_outline;
       case OrderStatus.completed: return Icons.done_all;
       case OrderStatus.served: return Icons.check;
