@@ -11,6 +11,7 @@ class EditsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final items = provider.menuItems;
+    final isPhone = MediaQuery.of(context).size.width < 650;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -22,143 +23,201 @@ class EditsScreen extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       body: Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Menu Edits',
-            style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 32),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Toggle availability and update prices instantly across the app.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+        padding: EdgeInsets.symmetric(
+          horizontal: isPhone ? 14.0 : 24.0,
+          vertical: isPhone ? 12.0 : 20.0,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Menu Edits',
+              style: Theme.of(context)
+                  .textTheme
+                  .displayLarge
+                  ?.copyWith(fontSize: isPhone ? 24 : 32),
             ),
-            child: const Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.orange),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Changes made here are stored in memory. A backend database table is required for permanent edits.',
-                    style: TextStyle(color: Colors.deepOrange),
+            const SizedBox(height: 6),
+            Text(
+              'Toggle availability and update prices instantly across the app.',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontSize: isPhone ? 13 : 14),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.cloud_done, color: Colors.green, size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Live Supabase Sync: All edits to price, stock, and new dishes are permanently saved in your database.',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12.5,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          
-          Expanded(
-            child: ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 1,
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: item.imageUrl.startsWith('assets/')
-                          ? Image.asset(
-                              item.imageUrl,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                width: 60,
-                                height: 60,
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
+            const SizedBox(height: 18),
+            
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.only(bottom: 80),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 1.5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: item.imageUrl.startsWith('assets/')
+                                    ? Image.asset(
+                                        item.imageUrl,
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          width: 60,
+                                          height: 60,
+                                          color: Colors.grey[200],
+                                          child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                        ),
+                                      )
+                                    : Image.network(
+                                        item.imageUrl,
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          width: 60,
+                                          height: 60,
+                                          color: Colors.grey[200],
+                                          child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                        ),
+                                      ),
                               ),
-                            )
-                          : Image.network(
-                              item.imageUrl,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                width: 60,
-                                height: 60,
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                              ),
-                            ),
-                    ),
-                    title: Text(
-                      item.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    subtitle: Text(
-                      item.category,
-                      style: const TextStyle(color: AppTheme.textLight),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Price Edit Button
-                        TextButton.icon(
-                          onPressed: () {
-                            _showEditPriceDialog(context, item, provider);
-                          },
-                          icon: const Icon(Icons.edit, size: 18),
-                          label: Text(
-                            '₹${item.price.toStringAsFixed(0)}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          style: TextButton.styleFrom(foregroundColor: AppTheme.primaryColor),
-                        ),
-                        const SizedBox(width: 16),
-                        // Stock Toggle
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              item.isOutOfStock ? 'Out of Stock' : 'In Stock',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: item.isOutOfStock ? Colors.red : Colors.green,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 30,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Switch(
-                                  value: !item.isOutOfStock,
-                                  activeThumbColor: Colors.green,
-                                  onChanged: (value) {
-                                    provider.toggleItemStock(item.id);
-                                  },
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      item.category,
+                                      style: const TextStyle(color: AppTheme.textLight, fontSize: 13),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          const Divider(height: 1),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Price Edit Button
+                              InkWell(
+                                onTap: () => _showEditPriceDialog(context, item, provider),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.edit, size: 15, color: AppTheme.primaryColor),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        '₹${item.price.toStringAsFixed(0)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: AppTheme.primaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Stock Toggle + status badge
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: item.isOutOfStock
+                                          ? Colors.red.withValues(alpha: 0.1)
+                                          : Colors.green.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      item.isOutOfStock ? 'Out of Stock' : 'In Stock',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: item.isOutOfStock ? Colors.red : Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Switch(
+                                    value: !item.isOutOfStock,
+                                    activeThumbColor: Colors.green,
+                                    inactiveThumbColor: Colors.red,
+                                    inactiveTrackColor: Colors.red.withValues(alpha: 0.3),
+                                    onChanged: (value) {
+                                      provider.toggleItemStock(item.id);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
     );
   }
 

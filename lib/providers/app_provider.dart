@@ -220,6 +220,7 @@ class AppProvider with ChangeNotifier {
 
   void _initSupabase() async {
     _fetchOrders();
+    _fetchMenuItems();
     _loadRecommendations();
     _loadCart();
     _loadOrders();
@@ -239,6 +240,60 @@ class AppProvider with ChangeNotifier {
             },
           )
           .subscribe();
+
+      // Listen to real-time menu item changes
+      _supabase
+          .channel('public:menu_items')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'menu_items',
+            callback: (payload) {
+              _fetchMenuItems();
+            },
+          )
+          .subscribe();
+    }
+  }
+
+  Future<void> _fetchMenuItems() async {
+    try {
+      final data = await _supabase
+          .from('menu_items')
+          .select('*')
+          .order('name');
+
+      if (data.isNotEmpty) {
+        final Map<String, bool> currentFavs = {
+          for (var item in _menuItems) item.id: item.isFavourite,
+        };
+        final remoteItems = <MenuItem>[];
+        for (final row in data) {
+          final item = MenuItem.fromJson(row);
+          if (currentFavs.containsKey(item.id)) {
+            item.isFavourite = currentFavs[item.id]!;
+          }
+          remoteItems.add(item);
+        }
+        _menuItems.clear();
+        _menuItems.addAll(remoteItems);
+        _shuffledAllItems = null;
+        notifyListeners();
+      } else {
+        await _seedInitialMenuItems();
+      }
+    } catch (e) {
+      debugPrint('Error fetching menu items from Supabase: $e');
+    }
+  }
+
+  Future<void> _seedInitialMenuItems() async {
+    try {
+      final payload = _menuItems.map((m) => m.toSupabaseMap()).toList();
+      await _supabase.from('menu_items').upsert(payload);
+      debugPrint('Seeded initial menu items to Supabase.');
+    } catch (e) {
+      debugPrint('Error seeding menu items: $e');
     }
   }
 
@@ -1179,26 +1234,50 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  void toggleItemStock(String id) {
+  void toggleItemStock(String id) async {
     final index = _menuItems.indexWhere((item) => item.id == id);
     if (index >= 0) {
       _menuItems[index].isOutOfStock = !_menuItems[index].isOutOfStock;
+      final newStatus = _menuItems[index].isOutOfStock;
       notifyListeners();
+      try {
+        await _supabase
+            .from('menu_items')
+            .update({'is_out_of_stock': newStatus, 'updated_at': DateTime.now().toUtc().toIso8601String()})
+            .eq('id', id);
+      } catch (e) {
+        debugPrint('Error syncing item stock status to Supabase: $e');
+      }
     }
   }
 
-  void updateItemPrice(String id, double newPrice) {
+  void updateItemPrice(String id, double newPrice) async {
     final index = _menuItems.indexWhere((item) => item.id == id);
     if (index >= 0) {
       _menuItems[index].price = newPrice;
       notifyListeners();
+      try {
+        await _supabase
+            .from('menu_items')
+            .update({'price': newPrice, 'updated_at': DateTime.now().toUtc().toIso8601String()})
+            .eq('id', id);
+      } catch (e) {
+        debugPrint('Error syncing item price to Supabase: $e');
+      }
     }
   }
 
-  void addMenuItem(MenuItem item) {
+  void addMenuItem(MenuItem item) async {
     _menuItems.insert(0, item);
     _shuffledAllItems = null; // reset shuffled items so it updates
     notifyListeners();
+    try {
+      await _supabase
+          .from('menu_items')
+          .insert(item.toSupabaseMap());
+    } catch (e) {
+      debugPrint('Error inserting new menu item to Supabase: $e');
+    }
   }
 
   int getCartItemQuantity(String itemId) {

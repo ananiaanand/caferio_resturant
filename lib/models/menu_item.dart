@@ -32,13 +32,28 @@ class MenuItem {
       description: json['description']?.toString() ?? '',
       price: (json['price'] is num) ? (json['price'] as num).toDouble() : 0.0,
       category: json['category']?.toString() ?? 'General',
-      imageUrl: json['imageUrl']?.toString() ?? '',
-      isSpecial: json['isSpecial'] as bool? ?? false,
-      isTopPick: json['isTopPick'] as bool? ?? false,
-      isFavourite: json['isFavourite'] as bool? ?? false,
-      isOutOfStock: json['isOutOfStock'] as bool? ?? false,
+      imageUrl: (json['imageUrl'] ?? json['image_url'])?.toString() ?? '',
+      isSpecial: (json['isSpecial'] ?? json['is_special']) as bool? ?? false,
+      isTopPick: (json['isTopPick'] ?? json['is_top_pick']) as bool? ?? false,
+      isFavourite: (json['isFavourite'] ?? json['is_favourite']) as bool? ?? false,
+      isOutOfStock: (json['isOutOfStock'] ?? json['is_out_of_stock']) as bool? ?? false,
       ingredients: (json['ingredients'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     );
+  }
+
+  Map<String, dynamic> toSupabaseMap() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'category': category,
+      'image_url': imageUrl,
+      'is_special': isSpecial,
+      'is_top_pick': isTopPick,
+      'is_out_of_stock': isOutOfStock,
+      'ingredients': ingredients,
+    };
   }
 
   Map<String, dynamic> toJson() {
