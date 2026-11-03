@@ -123,83 +123,110 @@ class ShortageScreen extends StatelessWidget {
                       ),
                       ...items.map((item) => Column(
                         children: [
-                          ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                            title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                            subtitle: item.stockStatus != null && item.expectedRunOutDate != null
-                                ? Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: item.stockStatus == 'CRITICAL'
-                                                ? Colors.red.withValues(alpha: 0.1)
-                                                : item.stockStatus == 'WARNING'
-                                                    ? Colors.orange.withValues(alpha: 0.1)
-                                                    : Colors.green.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(4),
-                                            border: Border.all(
-                                              color: item.stockStatus == 'CRITICAL'
-                                                  ? Colors.red
-                                                  : item.stockStatus == 'WARNING'
-                                                      ? Colors.orange
-                                                      : Colors.green,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Left: name + status info
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                                      if (item.stockStatus != null && item.expectedRunOutDate != null) ...[
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: item.stockStatus == 'CRITICAL'
+                                                    ? Colors.red.withValues(alpha: 0.1)
+                                                    : item.stockStatus == 'WARNING'
+                                                        ? Colors.orange.withValues(alpha: 0.1)
+                                                        : Colors.green.withValues(alpha: 0.1),
+                                                borderRadius: BorderRadius.circular(4),
+                                                border: Border.all(
+                                                  color: item.stockStatus == 'CRITICAL'
+                                                      ? Colors.red
+                                                      : item.stockStatus == 'WARNING'
+                                                          ? Colors.orange
+                                                          : Colors.green,
+                                                ),
+                                              ),
+                                              child: Text(
+                                                item.stockStatus!,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: item.stockStatus == 'CRITICAL'
+                                                      ? Colors.red
+                                                      : item.stockStatus == 'WARNING'
+                                                          ? Colors.orange
+                                                          : Colors.green,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                          child: Text(
-                                            item.stockStatus!,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: item.stockStatus == 'CRITICAL'
-                                                  ? Colors.red
-                                                  : item.stockStatus == 'WARNING'
-                                                      ? Colors.orange
-                                                      : Colors.green,
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                'Runs out in ${item.daysLeft} days · ${item.expectedRunOutDate!.day}/${item.expectedRunOutDate!.month}/${item.expectedRunOutDate!.year}',
+                                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                          'Runs out in ${item.daysLeft} days (Expected: ${item.expectedRunOutDate!.day}/${item.expectedRunOutDate!.month}/${item.expectedRunOutDate!.year})\nStock: ${item.currentStock.toStringAsFixed(0)} ${item.lastRefilledDate != null ? '| Refilled: ${item.lastRefilledDate!.day}/${item.lastRefilledDate!.month}' : ''}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
-                                          ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Stock: ${item.currentStock.toStringAsFixed(0)}${item.lastRefilledDate != null ? '  ·  Refilled: ${item.lastRefilledDate!.day}/${item.lastRefilledDate!.month}' : ''}',
+                                          style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                                         ),
                                       ],
-                                    ),
-                                  )
-                                : null,
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
-                                  tooltip: 'Refill',
-                                  onPressed: () => _showRefillDialog(context, item, provider),
-                                ),
-                                Text(
-                                  item.isOutOfStock ? 'OUT OF STOCK' : 'AVAILABLE',
-                                  style: TextStyle(
-                                    color: item.isOutOfStock ? Colors.red : Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                Switch(
-                                  value: !item.isOutOfStock, // Switch is ON when Available, OFF when Out of Stock
-                                  onChanged: (val) {
-                                    provider.toggleInventoryStock(item.id);
-                                  },
-                                  activeThumbColor: Colors.green,
-                                  inactiveThumbColor: Colors.red,
-                                  inactiveTrackColor: Colors.red.withValues(alpha: 0.3),
+                                // Right: toggle + refill
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          item.isOutOfStock ? 'OUT OF\nSTOCK' : 'AVAILABLE',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: item.isOutOfStock ? Colors.red : Colors.green,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        Switch(
+                                          value: !item.isOutOfStock,
+                                          onChanged: (val) => provider.toggleInventoryStock(item.id),
+                                          activeThumbColor: Colors.green,
+                                          inactiveThumbColor: Colors.red,
+                                          inactiveTrackColor: Colors.red.withValues(alpha: 0.3),
+                                        ),
+                                      ],
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: () => _showRefillDialog(context, item, provider),
+                                      icon: const Icon(Icons.add_shopping_cart, size: 14),
+                                      label: const Text('Refill', style: TextStyle(fontSize: 12)),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.blue,
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        minimumSize: Size.zero,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
